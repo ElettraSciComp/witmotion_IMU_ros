@@ -1,0 +1,3 @@
+[submodule "witmotion-uart-qt"]
+	path = witmotion-uart-qt
+	url = git@gitlab.elettra.eu:robotics/witmotion-qt.git

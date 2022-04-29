@@ -1,0 +1,53 @@
+witmotion_imu:
+    port: ttyUSB0
+    baud_rate: 9600 # baud
+    polling_interval: 30 # ms
+    imu_publisher:
+        topic_name: /imu
+        frame_id: imu
+        measurements:
+            acceleration:
+                enabled: true
+                covariance: [ 0.0075,    0,       0,
+                              0,         0.0039,  0,
+                              0,         0,       0.0034 ]
+            angular_velocity:
+                enabled: true
+                covariance: [ 0.0075,    0,       0,
+                              0,         0.0039,  0,
+                              0,         0,       0.0034 ]
+            orientation:
+                enabled: true
+                covariance: [ 0.0213,    0,       0,
+                              0,         0.0429,  0,
+                              0,         0,       0      ]
+    temperature_publisher:
+        enabled: true
+        topic_name: /temperature
+        frame_id: base_link
+        from_message: magnetometer # acceleration, angular_vel, orientation, magnetometer
+        variance: 0.1
+        coefficient: 1.0 # Linear calibration parameters: coefficient
+        addition: 0.0 # and addition
+    magnetometer_publisher:
+        enabled: true
+        topic_name: /magnetometer
+        frame_id: imu
+        coefficient: 1.0 # Linear calibration parameters: coefficient
+        addition: 0.0 # and addition
+        covariance: [ 0.01,   0,       0,
+                      0,      0.01,    0,
+                      0,      0,       0.01  ]
+    barometer_publisher:
+        enabled: true
+        topic_name: /barometer
+        frame_id: base_link
+        variance: 0.001
+        coefficient: 1.0 # Linear calibration parameters: coefficient
+        addition: 0.0 # and addition
+    altimeter_publisher:
+        enabled: true
+        topic_name: /altitude
+        coefficient: 1.0 # Linear calibration parameters: coefficient
+        addition: 0.0 # and addition
+        
