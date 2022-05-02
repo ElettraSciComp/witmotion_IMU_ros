@@ -28,13 +28,13 @@ witmotion_imu:
         from_message: magnetometer # acceleration, angular_vel, orientation, magnetometer
         variance: 0.1
         coefficient: 1.0 # Linear calibration parameters: coefficient
-        addition: 0.0 # and addition
+        addition: 0.0 # and addendum
     magnetometer_publisher:
         enabled: true
         topic_name: /magnetometer
         frame_id: imu
         coefficient: 1.0 # Linear calibration parameters: coefficient
-        addition: 0.0 # and addition
+        addition: 0.0 # and addendum
         covariance: [ 0.01,   0,       0,
                       0,      0.01,    0,
                       0,      0,       0.01  ]
@@ -49,5 +49,5 @@ witmotion_imu:
         enabled: true
         topic_name: /altitude
         coefficient: 1.0 # Linear calibration parameters: coefficient
-        addition: 0.0 # and addition
+        addition: 0.0 # and addendum
         
