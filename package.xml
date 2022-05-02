@@ -1,5 +1,5 @@
 <package format="2">
-    <name>witmotion_imu_gps</name>
+    <name>witmotion_ros</name>
     <version>0.0.1</version>
     <description>Standalone QT-based IMU/GPS decoder nodes for Witmotion UART-compatible sensor devices</description>
 

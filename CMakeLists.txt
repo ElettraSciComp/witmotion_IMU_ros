@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(witmotion_imu_gps)
+project(witmotion_ros)
 
 add_compile_options(-std=gnu++14)
 

@@ -1,5 +1,5 @@
 # Witmotion IMU sensor driver for ROS
-`witmotion_imu_gps` implements a ROS 1 wrapper for [Witmotion IMU](./witmotion-uart-qt) driver library. It reads the data from the family of TTL-compatible inertial pose estimation units (IMUs) manufactured by [WitMotion Shenzhen Co.,Ltd](https://www.wit-motion.com) publishing the information in ROS-native way using [`sensor_msgs`](http://wiki.ros.org/sensor_msgs) and [`std_msgs`](http://wiki.ros.org/std_msgs) message definition packages. The module is focused on read-only access, so calibration and bias regulation functions are implemented in the underlying library. Port access model is implemented in monopolistic way acccording to UNIX specification, so only one instance of the module can be executed for the dedicated virtual device.
+`witmotion_ros` module implements a ROS 1 wrapper for [Witmotion IMU](https://github.com/ElettraSciComp/witmotion_IMU_QT) driver library. It reads the data from the family of TTL-compatible inertial pose estimation units (IMUs) manufactured by [WitMotion Shenzhen Co.,Ltd](https://www.wit-motion.com) publishing the information in ROS-native way using [`sensor_msgs`](http://wiki.ros.org/sensor_msgs) and [`std_msgs`](http://wiki.ros.org/std_msgs) message definition packages. The module is focused on read-only access, so calibration and bias regulation functions are implemented in the underlying library. Port access model is implemented in monopolistic way acccording to UNIX specification, so only one instance of the module can be executed for the dedicated virtual device.
 
 The initial tests of the module were done using the following Witmotion sensor devices:
 - **WT31N 3-Axis Accelerometer/Gyroscope** (Linear accelerations + 2-axis Euler angles gravity tracking)
@@ -14,7 +14,7 @@ The module is developed according to the specifications released by Witmotion, t
 - [WT(9)31N 3-Axis Accelerometer/Gyroscope Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20WT931N%20Datasheet.pdf)
 
 ## Published message types
-The module published the following message types (once the incoming data is available from the sensor, all the topic names and publisher availablility are configurable):
+The module published the following message types (once the incoming data is available from the sensor, all the topic names and publisher availability are configurable):
 - [`sensor_msgs/Imu`](https://docs.ros.org/en/lunar/api/sensor_msgs/html/msg/Imu.html) for accelerometer/gyroscope data
 - [`sensor_msgs/Temperature`](https://docs.ros.org/en/api/sensor_msgs/html/msg/Temperature.html) for thermal observation
 - [`sensor_msgs/MagneticField`](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/MagneticField.html) for magnetometer data
@@ -24,10 +24,10 @@ The module published the following message types (once the incoming data is avai
 To determine which kinds of data the actually presented sensor produces, the `message-enumerator` application from an underlying library can be used.
 
 ## Configuration
-Configuration of the node is done by default via the configuration YAML file [`config.yml`](./config/config.yml). But it also can be done using [`roslaunch` XML syntax](https://wiki.ros.org/roslaunch/XML) under the node's internal namespace. The single value measurements, like pressure and temperature, are enabled fot the linear calibration because there can be differences in decoding coefficients between the sensors (proven for WT31N and JY901B sensors).
+Configuration of the node is done by default via the configuration YAML file [`config.yml`](./config/config.yml). But it also can be done using [`roslaunch` XML syntax](https://wiki.ros.org/roslaunch/XML) under the node's internal namespace. The single value measurements, like pressure and temperature, are enabled for the linear calibration because there can be differences in decoding coefficients between the sensors (proven for WT31N and JY901B sensors).
 
 ### Parameters
-- `port` - the virtual kernel device port name, `ttyUSB0` by default
+- `port` - the virtual kernel device name for a port, `ttyUSB0` by default
 - `baud_rate` - port rate value to be used by the library for opening the port, _9600 baud_ by default
 - `polling_interval` - the sensor polling interval in milliseconds. If this parameter is omitted, the default value is set up by the library (50 ms).
 - `imu_publisher:`
