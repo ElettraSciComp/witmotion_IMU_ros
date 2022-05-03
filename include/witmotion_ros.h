@@ -23,6 +23,7 @@
 #include <sensor_msgs/FluidPressure.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/Quaternion.h>
 
 using namespace witmotion;
 
@@ -97,11 +98,20 @@ private:
     /* ALTIMETER */
     std::string _altimeter_topic;
     static bool altimeter_enable;
+    static bool have_altitude;
+    static double last_altitude;
     static double altimeter_coeff;
     static double altimeter_addition;
     ros::Publisher _altimeter_publisher;
     static ros::Publisher* altimeter_publisher;
     static void altimeter_process(const witmotion_datapacket& packet);
+
+    /* ORIENTATION */
+    std::string _orientation_topic;
+    static bool orientation_enable;
+    ros::Publisher _orientation_publisher;
+    static ros::Publisher* orientation_publisher;
+    static void orientation_process(const witmotion_datapacket& packet);
 public:
     static ROSWitmotionSensorController& Instance();
     void Start();

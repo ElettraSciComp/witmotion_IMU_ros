@@ -43,6 +43,12 @@ bool ROSWitmotionSensorController::altimeter_enable = false;
 double ROSWitmotionSensorController::altimeter_coeff = 1.f;
 double ROSWitmotionSensorController::altimeter_addition = 0.f;
 ros::Publisher* ROSWitmotionSensorController::altimeter_publisher = nullptr;
+bool ROSWitmotionSensorController::have_altitude = false;
+double ROSWitmotionSensorController::last_altitude = 0.f;
+
+/* ORIENTATION */
+bool ROSWitmotionSensorController::orientation_enable = false;
+ros::Publisher* ROSWitmotionSensorController::orientation_publisher = nullptr;
 
 ROSWitmotionSensorController::ROSWitmotionSensorController():
     reader_thread(dynamic_cast<QObject*>(this)),
@@ -124,6 +130,14 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
         node.param<double>("altimeter_publisher/addition", altimeter_addition, 0.f);
         _altimeter_publisher = node.advertise<std_msgs::Float64>(_altimeter_topic, 1);
         altimeter_publisher = &_altimeter_publisher;
+    }
+    /* ORIENTATION */
+    node.param<bool>("orientation_publisher/enabled", orientation_enable, false);
+    if(orientation_enable)
+    {
+        node.getParam("orientation_publisher/topic_name", _orientation_topic);
+        _orientation_publisher = node.advertise<geometry_msgs::Quaternion>(_orientation_topic, 1);
+        orientation_publisher = &_orientation_publisher;
     }
 
     /*Initializing QT fields*/
@@ -288,7 +302,25 @@ void ROSWitmotionSensorController::altimeter_process(const witmotion_datapacket 
     {
         static std_msgs::Float64 msg;
         msg.data = (h * altimeter_coeff) + altimeter_addition;
+        if(!have_altitude)
+            have_altitude = true;
+        last_altitude = msg.data;
         altimeter_publisher->publish(msg);
+    }
+}
+
+void ROSWitmotionSensorController::orientation_process(const witmotion_datapacket &packet)
+{
+    if(orientation_enable)
+    {
+        static float x, y, z, w;
+        static geometry_msgs::Quaternion msg;
+        decode_orientation(packet, x, y, z, w);
+        msg.x = x;
+        msg.y = y;
+        msg.z = z;
+        msg.w = w;
+        orientation_publisher->publish(msg);
     }
 }
 
@@ -319,6 +351,9 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
         break;
     case pidAltimeter:
         altimeter_process(packet);
+        break;
+    case pidOrientation:
+        orientation_process(packet);
         break;
     default:
         ROS_WARN("Unknown packet ID 0x%X acquired", packet.id_byte);

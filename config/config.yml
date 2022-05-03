@@ -50,4 +50,6 @@ witmotion_imu:
         topic_name: /altitude
         coefficient: 1.0 # Linear calibration parameters: coefficient
         addition: 0.0 # and addendum
-        
+    orientation_publisher:
+        enabled: false
+        topic_name: /orientation
