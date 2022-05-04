@@ -70,4 +70,7 @@ Configuration of the node is done by default via the configuration YAML file [`c
     - `topic_name` - the topic name for publishing the data
     - `coefficient` - linear calibration multiplier, 1.0 by default
     - `addition` - linear calibration addendum, 0 by default
+- `orientation_publisher`
+    - `enabled` - enable or disable orientation measurement extraction
+    - `topic_name` - the topic name for publishing the data
 
