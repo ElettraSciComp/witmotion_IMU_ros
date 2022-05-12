@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     std_msgs
     nav_msgs
+    tf2_geometry_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -22,6 +23,7 @@ catkin_package(CATKIN_DEPENDS
     geometry_msgs
     std_msgs
     nav_msgs
+    tf2_geometry_msgs
 )
 
 add_subdirectory(witmotion-uart-qt)
