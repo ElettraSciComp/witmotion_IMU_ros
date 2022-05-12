@@ -17,6 +17,6 @@
     <depend>nav_core</depend>
     <depend>nav_msgs</depend>
     <depend>tf2</depend>
-    <depend>pluginlib</depend>
+    <depend>std_srvs</depend>
 </package>
 

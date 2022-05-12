@@ -15,7 +15,6 @@
 #include <boost/range/algorithm.hpp>
 
 #include <ros/ros.h>
-#include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/Temperature.h>
@@ -24,6 +23,12 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Vector3.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/UInt32.h>
+#include <std_srvs/Empty.h>
 
 using namespace witmotion;
 
@@ -37,6 +42,7 @@ private:
     uint32_t interval;
     QThread reader_thread;
     QBaseSerialWitmotionSensorReader* reader;
+    static bool suspended;
 
     ROSWitmotionSensorController();
     virtual ~ROSWitmotionSensorController();
@@ -45,6 +51,10 @@ private:
 
     /* ROS FIELDS*/
     ros::NodeHandle node;
+    static bool Restart(std_srvs::EmptyRequest &request, std_srvs::EmptyResponse &response);
+    std::string _restart_service_name;
+    ros::ServiceServer _restart_service;
+    static ros::ServiceServer* restart_service;
 
     /* IMU */
     std::string _imu_topic;
@@ -112,6 +122,37 @@ private:
     ros::Publisher _orientation_publisher;
     static ros::Publisher* orientation_publisher;
     static void orientation_process(const witmotion_datapacket& packet);
+
+    /* GPS */
+    static bool gps_enable;
+    static bool have_gps;
+    static bool have_ground_speed;
+    static bool have_accuracy;
+    static uint32_t satellites;
+    static std::vector<double> gps_covariance;
+    static std::string gps_frame_id;
+    static float gps_altitude;
+
+    std::string _gps_topic;
+    ros::Publisher _gps_publisher;
+    static ros::Publisher* gps_publisher;
+    static void gps_process(const witmotion_datapacket& packet);
+
+    std::string _ground_speed_topic;
+    std::string _gps_altitude_topic;
+    ros::Publisher _ground_speed_publisher;
+    ros::Publisher _gps_altitude_publisher;
+    static ros::Publisher* ground_speed_publisher;
+    static ros::Publisher* gps_altitude_publisher;
+    static void ground_speed_process(const witmotion_datapacket& packet);
+
+    std::string _accuracy_topic;
+    ros::Publisher _accuracy_publisher;
+    static ros::Publisher* accuracy_publisher;
+    std::string _satellites_topic;
+    ros::Publisher _satellites_publisher;
+    static ros::Publisher* satellites_publisher;
+    static void accuracy_process(const witmotion_datapacket& packet);
 public:
     static ROSWitmotionSensorController& Instance();
     void Start();
