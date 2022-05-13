@@ -1,5 +1,8 @@
 #include "witmotion_ros.h"
 
+bool ROSWitmotionSensorController::suspended = false;
+ros::ServiceServer* ROSWitmotionSensorController::restart_service = nullptr;
+
 /* IMU */
 ros::Publisher* ROSWitmotionSensorController::imu_publisher = nullptr;
 std::string ROSWitmotionSensorController::imu_frame_id = "imu";
@@ -50,11 +53,29 @@ double ROSWitmotionSensorController::last_altitude = 0.f;
 bool ROSWitmotionSensorController::orientation_enable = false;
 ros::Publisher* ROSWitmotionSensorController::orientation_publisher = nullptr;
 
+/* GPS */
+bool ROSWitmotionSensorController::gps_enable = false;
+bool ROSWitmotionSensorController::have_gps = false;
+bool ROSWitmotionSensorController::have_accuracy = false;
+bool ROSWitmotionSensorController::have_ground_speed = false;
+uint32_t ROSWitmotionSensorController::satellites = 0;
+float ROSWitmotionSensorController::gps_altitude = NAN;
+std::vector<double> ROSWitmotionSensorController::gps_covariance = {0,0,0,0,0,0,0,0,0};
+std::string ROSWitmotionSensorController::gps_frame_id = "world";
+ros::Publisher* ROSWitmotionSensorController::gps_publisher = nullptr;
+ros::Publisher* ROSWitmotionSensorController::ground_speed_publisher = nullptr;
+ros::Publisher* ROSWitmotionSensorController::accuracy_publisher = nullptr;
+ros::Publisher* ROSWitmotionSensorController::satellites_publisher = nullptr;
+ros::Publisher* ROSWitmotionSensorController::gps_altitude_publisher = nullptr;
+
 ROSWitmotionSensorController::ROSWitmotionSensorController():
     reader_thread(dynamic_cast<QObject*>(this)),
     node("~")
 {
     /*Initializing ROS fields*/
+    node.getParam("restart_service_name", _restart_service_name);
+    _restart_service = node.advertiseService(_restart_service_name, ROSWitmotionSensorController::Restart);
+    restart_service = &_restart_service;
     /* IMU */
     node.param<std::string>("imu_publisher/topic_name", _imu_topic, "imu");
     _imu_publisher = node.advertise<sensor_msgs::Imu>(_imu_topic, 1);
@@ -139,6 +160,27 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
         _orientation_publisher = node.advertise<geometry_msgs::Quaternion>(_orientation_topic, 1);
         orientation_publisher = &_orientation_publisher;
     }
+    /* GPS */
+    node.param<bool>("gps_publisher/enabled", gps_enable, false);
+    if(gps_enable)
+    {
+        node.getParam("gps_publisher/navsat_fix_frame_id", gps_frame_id);
+        node.getParam("gps_publisher/navsat_fix_topic_name", _gps_topic);
+        _gps_publisher = node.advertise<sensor_msgs::NavSatFix>(_gps_topic, 1);
+        gps_publisher = &_gps_publisher;
+        node.getParam("gps_publisher/ground_speed_topic_name", _ground_speed_topic);
+        _ground_speed_publisher = node.advertise<geometry_msgs::Twist>(_ground_speed_topic, 1);
+        ground_speed_publisher = &_ground_speed_publisher;
+        node.getParam("gps_publisher/navsat_variance_topic_name", _accuracy_topic);
+        _accuracy_publisher = node.advertise<geometry_msgs::Vector3>(_accuracy_topic, 1);
+        accuracy_publisher = &_accuracy_publisher;
+        node.getParam("gps_publisher/navsat_satellites_topic_name", _satellites_topic);
+        _satellites_publisher = node.advertise<std_msgs::UInt32>(_satellites_topic, 1);
+        satellites_publisher = &_satellites_publisher;
+        node.getParam("gps_publisher/navsat_altitude_topic_name", _gps_altitude_topic);
+        _gps_altitude_publisher = node.advertise<std_msgs::Float32>(_gps_altitude_topic, 1);
+        gps_altitude_publisher = &_gps_altitude_publisher;
+    }
 
     /*Initializing QT fields*/
     node.param<std::string>("port", port_name, "ttyUSB0");
@@ -166,6 +208,19 @@ ROSWitmotionSensorController::~ROSWitmotionSensorController()
 {
     reader_thread.quit();
     reader_thread.wait(10000);
+}
+
+bool ROSWitmotionSensorController::Restart(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response)
+{
+    ROS_INFO("Attempting to restart sensor connection from SUSPENDED state");
+    if(!suspended)
+    {
+        ROS_WARN("Cannot restart:  the connection is not suspended");
+        return false;
+    }
+    Instance().Start();
+    suspended = false;
+    return true;
 }
 
 void ROSWitmotionSensorController::imu_process(const witmotion_datapacket &packet)
@@ -324,6 +379,71 @@ void ROSWitmotionSensorController::orientation_process(const witmotion_datapacke
     }
 }
 
+void ROSWitmotionSensorController::gps_process(const witmotion_datapacket &packet)
+{
+    if(gps_enable)
+    {
+        static double latitude_deg, latitude_min, longitude_deg, longitude_min;
+        static sensor_msgs::NavSatFix msg;
+        decode_gps(packet, longitude_deg, longitude_min, latitude_deg, latitude_min);
+        msg.header.frame_id = gps_frame_id;
+        msg.header.stamp = ros::Time::now();
+        msg.status.service = sensor_msgs::NavSatStatus::SERVICE_GPS;
+        msg.status.status = sensor_msgs::NavSatStatus::STATUS_FIX;
+        msg.latitude = latitude_deg + (latitude_min / 60.f);
+        msg.longitude = longitude_deg + (longitude_min / 60.f);
+        msg.altitude = have_ground_speed ? gps_altitude : NAN;
+        msg.position_covariance_type = have_accuracy ? sensor_msgs::NavSatFix::COVARIANCE_TYPE_DIAGONAL_KNOWN :
+                                                       sensor_msgs::NavSatFix::COVARIANCE_TYPE_UNKNOWN;
+        for(uint8_t i = 0; i < 9; i++)
+            msg.position_covariance[i] = have_accuracy ? gps_covariance[i] :
+                                                         0.f;
+        gps_publisher->publish(msg);
+        have_gps = true;
+    }
+}
+
+void ROSWitmotionSensorController::ground_speed_process(const witmotion_datapacket &packet)
+{
+    if(gps_enable)
+    {
+        static float gps_angular_velocity;
+        static double gps_ground_speed;
+        static std_msgs::Float32 gps_altitude_msg;
+        static geometry_msgs::Twist ground_speed_msg;
+        decode_gps_ground_speed(packet, gps_altitude, gps_angular_velocity, gps_ground_speed);
+        gps_altitude_msg.data = gps_altitude;
+        gps_altitude_publisher->publish(gps_altitude_msg);
+        ground_speed_msg.linear.x = gps_ground_speed;
+        ground_speed_msg.angular.z = gps_angular_velocity;
+        ground_speed_publisher->publish(ground_speed_msg);
+        have_ground_speed = true;
+    }
+}
+
+void ROSWitmotionSensorController::accuracy_process(const witmotion_datapacket &packet)
+{
+    if(gps_enable)
+    {
+        static size_t sat;
+        static std_msgs::UInt32 satellites_msg;
+        static float local, horizontal, vertical;
+        static geometry_msgs::Vector3 accuracy_msg;
+        decode_gps_accuracy(packet, sat, local, horizontal, vertical);
+        satellites = static_cast<uint32_t>(sat);
+        satellites_msg.data = satellites;
+        satellites_publisher->publish(satellites_msg);
+        accuracy_msg.x = local;
+        accuracy_msg.y = horizontal;
+        accuracy_msg.z = vertical;
+        accuracy_publisher->publish(accuracy_msg);
+        gps_covariance[0] = local;
+        gps_covariance[4] = horizontal;
+        gps_covariance[8] = vertical;
+        have_accuracy = true;
+    }
+}
+
 ROSWitmotionSensorController &ROSWitmotionSensorController::Instance()
 {
     static ROSWitmotionSensorController instance;
@@ -355,6 +475,15 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
     case pidOrientation:
         orientation_process(packet);
         break;
+    case pidGPSAccuracy:
+        accuracy_process(packet);
+        break;
+    case pidGPSGroundSpeed:
+        ground_speed_process(packet);
+        break;
+    case pidGPSCoordinates:
+        gps_process(packet);
+        break;
     default:
         ROS_WARN("Unknown packet ID 0x%X acquired", packet.id_byte);
     }
@@ -363,5 +492,7 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
 void ROSWitmotionSensorController::Error(const QString &description)
 {
     ROS_ERROR("Sensor error: %s", description.toStdString().c_str());
+    ROS_INFO("Entering SUSPENDED state");
     reader->Suspend();
+    suspended = true;
 }

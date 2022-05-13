@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     sensor_msgs
     geometry_msgs
     std_msgs
+    std_srvs
     nav_msgs
     tf2_geometry_msgs
 )
@@ -22,6 +23,7 @@ catkin_package(CATKIN_DEPENDS
     sensor_msgs
     geometry_msgs
     std_msgs
+    std_srvs
     nav_msgs
     tf2_geometry_msgs
 )

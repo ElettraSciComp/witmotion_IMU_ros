@@ -13,15 +13,10 @@ The module is developed according to the specifications released by Witmotion, t
 - [WT61C 3-Axis Combined Accelerometer/Gyroscope Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20WT61C%20Datasheet.pdf)
 - [WT(9)31N 3-Axis Accelerometer/Gyroscope Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20WT931N%20Datasheet.pdf)
 
-## Published message types
-The module published the following message types (once the incoming data is available from the sensor, all the topic names and publisher availability are configurable):
-- [`sensor_msgs/Imu`](https://docs.ros.org/en/lunar/api/sensor_msgs/html/msg/Imu.html) for accelerometer/gyroscope data
-- [`sensor_msgs/Temperature`](https://docs.ros.org/en/api/sensor_msgs/html/msg/Temperature.html) for thermal observation
-- [`sensor_msgs/MagneticField`](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/MagneticField.html) for magnetometer data
-- [`sensor_msgs/FluidPressure`](https://docs.ros.org/en/lunar/api/sensor_msgs/html/msg/FluidPressure.html) for barometer output
-- `std_msgs/Float64` for altimeter output
-
-To determine which kinds of data the actually presented sensor produces, the `message-enumerator` application from an underlying library can be used.
+## Usage
+```sh
+roslaunch witmotion_ros witmotion_launch
+```
 
 ## Configuration
 Configuration of the node is done by default via the configuration YAML file [`config.yml`](./config/config.yml). But it also can be done using [`roslaunch` XML syntax](https://wiki.ros.org/roslaunch/XML) under the node's internal namespace. The single value measurements, like pressure and temperature, are enabled for the linear calibration because there can be differences in decoding coefficients between the sensors (proven for WT31N and JY901B sensors).
@@ -30,6 +25,7 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `port` - the virtual kernel device name for a port, `ttyUSB0` by default
 - `baud_rate` - port rate value to be used by the library for opening the port, _9600 baud_ by default
 - `polling_interval` - the sensor polling interval in milliseconds. If this parameter is omitted, the default value is set up by the library (50 ms).
+- `restart_service_name` - the service name used to restart the sensor connection after an error.
 - `imu_publisher:`
     - `topic_name` - the topic name for IMU data publisher, `imu` in the node's namespace by default
     - `frame_id` - IMU message header [frame ID](https://wiki.ros.org/tf)
