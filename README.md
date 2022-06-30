@@ -1,12 +1,6 @@
 # [Witmotion IMU sensor driver for ROS](https://wiki.ros.org/witmotion_ros)
 `witmotion_ros` module implements a ROS 1 wrapper for [Witmotion IMU](https://github.com/ElettraSciComp/witmotion_IMU_QT) driver library. It reads the data from the family of TTL-compatible inertial pose estimation units (IMUs) manufactured by [WitMotion Shenzhen Co.,Ltd](https://www.wit-motion.com) publishing the information in ROS-native way using [`sensor_msgs`](http://wiki.ros.org/sensor_msgs) and [`std_msgs`](http://wiki.ros.org/std_msgs) message definition packages. The module is focused on read-only access, so calibration and bias regulation functions are implemented in the underlying library. Port access model is implemented in monopolistic way acccording to UNIX specification, so only one instance of the module can be executed for the dedicated virtual device.
 
-The initial tests of the module were done using the following Witmotion sensor devices:
-- **WT31N 3-Axis Accelerometer/Gyroscope** (Linear accelerations + 2-axis Euler angles gravity tracking)
-- **JY901B 9-Axis Combined IMU/Magnetometer/Altimeter** (Linear accelerations, angular velocities, Euler angles, magnetic field, barometry, altitude)
-
-All the devices were connected to the machine using USB-TTL converter under reference schematics.
-
 ## Datasheets and official documentation
 The module is developed according to the specifications released by Witmotion, the presented snapshot has download date is 23.02.2022. The official website https://wiki.wit-motion.com is not always accessible, so the PDF snapshots are placed under [IPFS web directory](https://ipfs.elettra.eu/ipfs/QmWt316PF9LtxdP27wmmzMtTa5CHZy3jg1Las63Fw33uhN).
 
