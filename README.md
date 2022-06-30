@@ -23,7 +23,7 @@ If compilation fails, first check the directory `src/witmotion_ros/witmotion-uar
 
 ## Usage
 ```sh
-roslaunch witmotion_ros witmotion_launch.launch
+roslaunch witmotion_ros witmotion.launch
 ```
 
 ## Configuration
