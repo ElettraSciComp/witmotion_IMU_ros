@@ -8,14 +8,28 @@ The initial tests of the module were done using the following Witmotion sensor d
 All the devices were connected to the machine using USB-TTL converter under reference schematics.
 
 ## Datasheets and official documentation
-The module is developed according to the specifications released by Witmotion, the presented snapshot has download date is 23.02.2022. The official website https://wiki.wit-motion.com is not always accessible, so the PDF snapshots are placed under [IPFS web directory](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS):
-- [JY901 9-Axis Combined IMU/Magnetometer/Altimeter Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20JY901%20Datasheet.pdf)
-- [WT61C 3-Axis Combined Accelerometer/Gyroscope Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20WT61C%20Datasheet.pdf)
-- [WT(9)31N 3-Axis Accelerometer/Gyroscope Sensor](https://ipfs.elettra.eu/ipfs/QmPxJCemH7JCtmr35X8Zf68pkW2GgJT6LDUrroD4fqfSnS/Witmotion%20WT931N%20Datasheet.pdf)
+The module is developed according to the specifications released by Witmotion, the presented snapshot has download date is 23.02.2022. The official website https://wiki.wit-motion.com is not always accessible, so the PDF snapshots are placed under [IPFS web directory](https://ipfs.elettra.eu/ipfs/QmWt316PF9LtxdP27wmmzMtTa5CHZy3jg1Las63Fw33uhN).
+
+## Installation
+
+### Prerequisites
+The package requires QtSerialPort development package from Qt 5.1+
+```sh
+sudo apt-get install libqt5serialport5-dev
+```
+
+### Building
+```sh
+cd catkin_ws
+git clone --recursive https://github.com/ElettraSciComp/witmotion_IMU_ros.git src/witmotion_ros
+catkin_make
+```
+If compilation fails, first check the directory `src/witmotion_ros/witmotion-uart-qt`. If it is empty, the recursive clone failed, and you should manually clone the underlying library from the repository https://github.com/ElettraSciComp/witmotion_IMU_QT into this directory. **IMPORTANT!** Please beware of the directory name, the `CMakeLists` file refers exactly to the name `witmotion-uart-qt` specified in the target import section.
+
 
 ## Usage
 ```sh
-roslaunch witmotion_ros witmotion_launch
+roslaunch witmotion_ros witmotion_launch.launch
 ```
 
 ## Configuration
@@ -69,4 +83,12 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `orientation_publisher`
     - `enabled` - enable or disable orientation measurement extraction
     - `topic_name` - the topic name for publishing the data
+- `gps_publisher`
+    - `enabled` - enables/disables all GPS receiver measurements extraction
+    - `navsat_fix_frame_id` - frame ID for GPS fixed position publisher
+    - `navsat_fix_topic_name` - topic name for GPS fixed position publisher
+    - `navsat_altitude_topic_name` - topic name for GPS altitude publisher
+    - `navsat_satellites_topic_name` - topic name for GPS active satellites number publisher
+    - `navsat_variance_topic_name` - topic name for GPS diagonal variance publisher
+    - `ground_speed_topic_name` - topic name for GPS ground speed publisher
 
