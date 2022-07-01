@@ -62,4 +62,7 @@ witmotion_imu:
         navsat_satellites_topic_name: /gps_satellites
         navsat_variance_topic_name: /gps_variance
         ground_speed_topic_name: /gps_ground_speed
+    rtc_publisher:
+        enabled: false
+        topic_name: /witmotion_clock
 

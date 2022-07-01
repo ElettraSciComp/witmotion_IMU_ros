@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include <boost/range/algorithm.hpp>
+#include <ctime>
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
@@ -29,6 +30,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/UInt32.h>
 #include <std_srvs/Empty.h>
+#include <rosgraph_msgs/Clock.h>
 
 using namespace witmotion;
 
@@ -153,6 +155,13 @@ private:
     ros::Publisher _satellites_publisher;
     static ros::Publisher* satellites_publisher;
     static void accuracy_process(const witmotion_datapacket& packet);
+
+    /* REALTIME CLOCK */
+    static bool rtc_enable;
+    std::string _rtc_topic;
+    ros::Publisher _rtc_publisher;
+    static ros::Publisher* rtc_publisher;
+    static void rtc_process(const witmotion_datapacket& packet);
 public:
     static ROSWitmotionSensorController& Instance();
     void Start();

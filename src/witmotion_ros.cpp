@@ -68,6 +68,10 @@ ros::Publisher* ROSWitmotionSensorController::accuracy_publisher = nullptr;
 ros::Publisher* ROSWitmotionSensorController::satellites_publisher = nullptr;
 ros::Publisher* ROSWitmotionSensorController::gps_altitude_publisher = nullptr;
 
+/* REALTIME CLOCK */
+bool ROSWitmotionSensorController::rtc_enable = false;
+ros::Publisher* ROSWitmotionSensorController::rtc_publisher = nullptr;
+
 ROSWitmotionSensorController::ROSWitmotionSensorController():
     reader_thread(dynamic_cast<QObject*>(this)),
     node("~")
@@ -180,6 +184,14 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
         node.getParam("gps_publisher/navsat_altitude_topic_name", _gps_altitude_topic);
         _gps_altitude_publisher = node.advertise<std_msgs::Float32>(_gps_altitude_topic, 1);
         gps_altitude_publisher = &_gps_altitude_publisher;
+    }
+    /* REALTIME CLOCK */
+    node.param<bool>("rtc_publisher/enabled", rtc_enable, false);
+    if(rtc_enable)
+    {
+        node.getParam("rtc_publisher/topic_name", _rtc_topic);
+        _rtc_publisher = node.advertise<rosgraph_msgs::Clock>(_rtc_topic, 1);
+        rtc_publisher = &_rtc_publisher;
     }
 
     /*Initializing QT fields*/
@@ -444,6 +456,35 @@ void ROSWitmotionSensorController::accuracy_process(const witmotion_datapacket &
     }
 }
 
+void ROSWitmotionSensorController::rtc_process(const witmotion_datapacket &packet)
+{
+    static uint8_t year, month, day;
+    static uint8_t hour, minute, second;
+    static uint16_t millisecond;
+    static rosgraph_msgs::Clock rtc_msg;
+    static std::time_t rawtime;
+    time(&rawtime);
+    static struct tm timestamp = *localtime(&rawtime);
+    decode_realtime_clock(packet,
+                          year,
+                          month,
+                          day,
+                          hour,
+                          minute,
+                          second,
+                          millisecond);
+    timestamp.tm_year = year - 1800;
+    timestamp.tm_mon = month - 1;
+    timestamp.tm_mday = day;
+    timestamp.tm_hour = hour;
+    timestamp.tm_min = minute;
+    timestamp.tm_sec = second;
+    std::time_t ros_time = mktime(&timestamp);
+    rtc_msg.clock.sec = static_cast<uint32_t>(ros_time);
+    rtc_msg.clock.nsec = static_cast<uint32_t>(millisecond) * 1000000;
+    rtc_publisher->publish(rtc_msg);
+}
+
 ROSWitmotionSensorController &ROSWitmotionSensorController::Instance()
 {
     static ROSWitmotionSensorController instance;
@@ -459,6 +500,9 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
 {
     switch(static_cast<witmotion_packet_id>(packet.id_byte))
     {
+    case pidRTC:
+        rtc_process(packet);
+        break;
     case pidAcceleration:
     case pidAngularVelocity:
     case pidAngles:
