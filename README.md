@@ -7,7 +7,7 @@ The module is developed according to the specifications released by Witmotion, t
 ## Installation
 
 ### Prerequisites
-The package requires QtSerialPort development package from Qt 5.1+
+The package requires QtSerialPort development package from Qt 5.2+
 ```sh
 sudo apt-get install libqt5serialport5-dev
 ```
@@ -85,4 +85,7 @@ Configuration of the node is done by default via the configuration YAML file [`c
     - `navsat_satellites_topic_name` - topic name for GPS active satellites number publisher
     - `navsat_variance_topic_name` - topic name for GPS diagonal variance publisher
     - `ground_speed_topic_name` - topic name for GPS ground speed publisher
+- `rtc_publisher`
+    - `enabled` - enables/disables realtime clock information decoder
+    - `topic_name` - topic name for realtime clock publisher
 
