@@ -293,9 +293,9 @@ void ROSWitmotionSensorController::imu_process(const witmotion_datapacket &packe
         tf_orientation = tf_orientation.normalize();
         msg.orientation = tf2::toMsg(tf_orientation);
     }
-    if( (imu_enable_accel == (imu_enable_accel == imu_have_accel)) &&
-            (imu_enable_velocities == (imu_enable_velocities == imu_have_velocities)) &&
-            (imu_enable_orientation == (imu_enable_orientation == imu_have_orientation)) )
+    if( (imu_enable_accel == imu_have_accel) &&
+            (imu_enable_velocities == imu_have_velocities) &&
+            (imu_enable_orientation == imu_have_orientation) )
     {
         imu_publisher->publish(msg);
         imu_have_accel = false;
