@@ -6,6 +6,7 @@ witmotion_imu:
     imu_publisher:
         topic_name: /imu
         frame_id: imu
+        use_native_orientation: false
         measurements:
             acceleration:
                 enabled: true
@@ -52,7 +53,7 @@ witmotion_imu:
         coefficient: 1.0 # Linear calibration parameters: coefficient
         addition: 0.0 # and addendum
     orientation_publisher:
-        enabled: false
+        enabled: true
         topic_name: /orientation
     gps_publisher:
         enabled: false

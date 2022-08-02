@@ -37,6 +37,7 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `imu_publisher:`
     - `topic_name` - the topic name for IMU data publisher, `imu` in the node's namespace by default
     - `frame_id` - IMU message header [frame ID](https://wiki.ros.org/tf)
+    - `use_native_orientation` - instructs the node to use the native quaternion orientation measurement from the sensor instead of synthesized from Euler angles. **NOTE**: if this setting is enabled bu the sensor does not produce orientation in the quaternion format, the IMU message will never be published!
     - `measurements` - every measurement in IMU message data pack can be enabled or disabled. If the measurement is disabled, the corresponding covariance matrix is set to begin from `-1` as it is described in the [message definition](https://docs.ros.org/en/lunar/api/sensor_msgs/html/msg/Imu.html).
         - `acceleration`
             - `enabled`

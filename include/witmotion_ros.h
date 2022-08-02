@@ -69,6 +69,7 @@ private:
     static std::vector<float> imu_velocity_covariance;
     static bool imu_enable_orientation;
     static bool imu_have_orientation;
+    static bool imu_native_orientation;
     static std::vector<float> imu_orientation_covariance;
     ros::Publisher _imu_publisher;
     static ros::Publisher* imu_publisher;

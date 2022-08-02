@@ -12,6 +12,7 @@ bool ROSWitmotionSensorController::imu_enable_orientation = false;
 bool ROSWitmotionSensorController::imu_have_accel = false;
 bool ROSWitmotionSensorController::imu_have_velocities = false;
 bool ROSWitmotionSensorController::imu_have_orientation = false;
+bool ROSWitmotionSensorController::imu_native_orientation = false;
 std::vector<float> ROSWitmotionSensorController::imu_accel_covariance = {-1,0,0,0,0,0,0,0,0};
 std::vector<float> ROSWitmotionSensorController::imu_velocity_covariance = {-1,0,0,0,0,0,0,0,0};
 std::vector<float> ROSWitmotionSensorController::imu_orientation_covariance = {-1,0,0,0,0,0,0,0,0};
@@ -85,6 +86,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
     _imu_publisher = node.advertise<sensor_msgs::Imu>(_imu_topic, 1);
     imu_publisher = &_imu_publisher;
     node.param<std::string>("imu_publisher/frame_id", imu_frame_id, "imu");
+    node.param<bool>("imu_publisher/use_native_orientation", imu_native_orientation, false);
     node.param<bool>("imu_publisher/measurements/acceleration/enabled", imu_enable_accel, false);
     if(imu_enable_accel)
         node.getParam("imu_publisher/measurements/acceleration/covariance", imu_accel_covariance);
@@ -250,7 +252,7 @@ void ROSWitmotionSensorController::imu_process(const witmotion_datapacket &packe
     }
     static float ax, ay, az, t;
     static float wx, wy, wz;
-    static float x, y, z;
+    static float x, y, z, qx, qy, qz, qw;
     switch(static_cast<witmotion_packet_id>(packet.id_byte))
     {
     case pidAcceleration:
@@ -269,7 +271,11 @@ void ROSWitmotionSensorController::imu_process(const witmotion_datapacket &packe
         x *= DEG2RAD;
         y *= DEG2RAD;
         z *= DEG2RAD;
-        imu_have_orientation = true;
+        imu_have_orientation = !imu_native_orientation;
+        break;
+    case pidOrientation:
+        decode_orientation(packet, qx, qy, qz, qw);
+        imu_have_orientation = imu_native_orientation;
         break;
     default:
         return;
@@ -289,7 +295,15 @@ void ROSWitmotionSensorController::imu_process(const witmotion_datapacket &packe
     if(imu_enable_orientation && imu_have_orientation)
     {
         tf2::Quaternion tf_orientation;
-        tf_orientation.setRPY(x, y, z);
+        if(imu_native_orientation)
+        {
+            tf_orientation.setX(qx);
+            tf_orientation.setY(qy);
+            tf_orientation.setZ(qz);
+            tf_orientation.setW(qw);
+        }
+        else
+            tf_orientation.setRPY(x, y, z);
         tf_orientation = tf_orientation.normalize();
         msg.orientation = tf2::toMsg(tf_orientation);
     }
@@ -518,6 +532,7 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
         break;
     case pidOrientation:
         orientation_process(packet);
+        imu_process(packet);
         break;
     case pidGPSAccuracy:
         accuracy_process(packet);
