@@ -1,6 +1,6 @@
 <package format="2">
     <name>witmotion_ros</name>
-    <version>0.0.1</version>
+    <version>0.8.22</version>
     <description>Standalone QT-based IMU/GPS decoder nodes for Witmotion UART-compatible sensor devices</description>
 
     <maintainer email="andrey.vukolov@elettra.eu">Andrey Vukolov</maintainer>
