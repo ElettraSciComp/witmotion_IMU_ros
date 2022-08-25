@@ -64,7 +64,7 @@ add_library(witmotion_ros
     ${MOC_SOURCES}
     src/witmotion_ros.cpp
     )
-target_link_libraries(witmotion_ros ${catkin_LIBRARIES} witmotion-uart)
+target_link_libraries(witmotion_ros ${catkin_LIBRARIES} witmotion-uart Qt5::Core Qt5::SerialPort)
 
 add_executable(witmotion_ros_node src/witmotion_ros_node.cpp)
 target_link_libraries(witmotion_ros_node PRIVATE ${catkin_LIBRARIES} witmotion_ros)

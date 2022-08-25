@@ -1,7 +1,7 @@
 witmotion_imu:
     port: ttyUSB0
     baud_rate: 9600 # baud
-    polling_interval: 30 # ms
+    polling_interval: 50 # ms
     restart_service_name: /restart_imu
     imu_publisher:
         topic_name: /imu
@@ -64,6 +64,7 @@ witmotion_imu:
         navsat_variance_topic_name: /gps_variance
         ground_speed_topic_name: /gps_ground_speed
     rtc_publisher:
-        enabled: false
+        enabled: true
         topic_name: /witmotion_clock
+        init_timestamp: true
 

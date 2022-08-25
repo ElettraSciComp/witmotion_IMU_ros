@@ -472,31 +472,27 @@ void ROSWitmotionSensorController::accuracy_process(const witmotion_datapacket &
 
 void ROSWitmotionSensorController::rtc_process(const witmotion_datapacket &packet)
 {
-    static uint8_t year, month, day;
-    static uint8_t hour, minute, second;
-    static uint16_t millisecond;
-    static rosgraph_msgs::Clock rtc_msg;
-    static std::time_t rawtime;
-    time(&rawtime);
-    static struct tm timestamp = *localtime(&rawtime);
-    decode_realtime_clock(packet,
-                          year,
-                          month,
-                          day,
-                          hour,
-                          minute,
-                          second,
-                          millisecond);
-    timestamp.tm_year = year - 1800;
-    timestamp.tm_mon = month - 1;
-    timestamp.tm_mday = day;
-    timestamp.tm_hour = hour;
-    timestamp.tm_min = minute;
-    timestamp.tm_sec = second;
-    std::time_t ros_time = mktime(&timestamp);
-    rtc_msg.clock.sec = static_cast<uint32_t>(ros_time);
-    rtc_msg.clock.nsec = static_cast<uint32_t>(millisecond) * 1000000;
-    rtc_publisher->publish(rtc_msg);
+    if(rtc_enable)
+    {
+        static uint8_t year, month, day;
+        static uint8_t hour, minute, second;
+        static uint16_t millisecond;
+        static rosgraph_msgs::Clock rtc_msg;
+        decode_realtime_clock(packet,
+                              year,
+                              month,
+                              day,
+                              hour,
+                              minute,
+                              second,
+                              millisecond);
+        QDateTime qt_time;
+        qt_time.setTime(QTime(hour, minute, second, millisecond));
+        qt_time.setDate(QDate(year + 2000, month, day));
+        rtc_msg.clock.sec = qt_time.toSecsSinceEpoch();
+        rtc_msg.clock.nsec = static_cast<uint32_t>(1000000 * millisecond);
+        rtc_publisher->publish(rtc_msg);
+    }
 }
 
 ROSWitmotionSensorController &ROSWitmotionSensorController::Instance()
@@ -544,7 +540,7 @@ void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
         gps_process(packet);
         break;
     default:
-        ROS_WARN("Unknown packet ID 0x%X acquired", packet.id_byte);
+        ROS_INFO("Unknown packet ID 0x%X acquired", packet.id_byte);
     }
 }
 
