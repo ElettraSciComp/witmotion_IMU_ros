@@ -89,4 +89,5 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `rtc_publisher`
     - `enabled` - enables/disables realtime clock information decoder
     - `topic_name` - topic name for realtime clock publisher
+    - `presync` - instructs the node to perform an attempt to pre-synchronize sensor's internal realtime clock
 
