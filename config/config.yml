@@ -66,5 +66,5 @@ witmotion_imu:
     rtc_publisher:
         enabled: true
         topic_name: /witmotion_clock
-        init_timestamp: true
+        presync: true
 

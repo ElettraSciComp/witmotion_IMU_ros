@@ -5,6 +5,7 @@
 #include <QIODevice>
 #include <QThread>
 #include <QCoreApplication>
+#include <QDateTime>
 
 #include "witmotion/types.h"
 #include "witmotion/serial.h"
@@ -162,6 +163,7 @@ private:
     std::string _rtc_topic;
     ros::Publisher _rtc_publisher;
     static ros::Publisher* rtc_publisher;
+    static bool rtc_presync;
     static void rtc_process(const witmotion_datapacket& packet);
 public:
     static ROSWitmotionSensorController& Instance();
@@ -171,6 +173,7 @@ public slots:
     void Error(const QString& description);
 signals:
     void RunReader();
+    void ConfigureSensor(const witmotion_config_packet& config_packet);
 };
 
 #endif

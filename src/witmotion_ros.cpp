@@ -72,6 +72,7 @@ ros::Publisher* ROSWitmotionSensorController::gps_altitude_publisher = nullptr;
 /* REALTIME CLOCK */
 bool ROSWitmotionSensorController::rtc_enable = false;
 ros::Publisher* ROSWitmotionSensorController::rtc_publisher = nullptr;
+bool ROSWitmotionSensorController::rtc_presync = false;
 
 ROSWitmotionSensorController::ROSWitmotionSensorController():
     reader_thread(dynamic_cast<QObject*>(this)),
@@ -194,6 +195,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
         node.getParam("rtc_publisher/topic_name", _rtc_topic);
         _rtc_publisher = node.advertise<rosgraph_msgs::Clock>(_rtc_topic, 1);
         rtc_publisher = &_rtc_publisher;
+        node.param<bool>("rtc_publisher/presync", rtc_presync, false);
     }
 
     /*Initializing QT fields*/
@@ -213,6 +215,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
     reader->moveToThread(&reader_thread);
     connect(&reader_thread, &QThread::finished, reader, &QObject::deleteLater);
     connect(this, &ROSWitmotionSensorController::RunReader, reader, &QAbstractWitmotionSensorReader::RunPoll);
+    connect(this, &ROSWitmotionSensorController::ConfigureSensor, reader, &QAbstractWitmotionSensorReader::SendConfig);
     connect(reader, &QAbstractWitmotionSensorReader::Acquired, this, &ROSWitmotionSensorController::Packet);
     connect(reader, &QAbstractWitmotionSensorReader::Error, this, &ROSWitmotionSensorController::Error);
     reader_thread.start();
@@ -504,6 +507,46 @@ ROSWitmotionSensorController &ROSWitmotionSensorController::Instance()
 void ROSWitmotionSensorController::Start()
 {
     emit RunReader();
+    if(rtc_enable && rtc_presync)
+    {
+        ROS_INFO("Initiating RTC pre-synchonization: current timestamp %s",
+                 QDateTime::currentDateTime().toString(Qt::DateFormat::ISODateWithMs).toStdString().c_str());
+        witmotion::witmotion_config_packet config_packet;
+        config_packet.header_byte = witmotion::WITMOTION_CONFIG_HEADER;
+        config_packet.key_byte = witmotion::WITMOTION_CONFIG_KEY;
+        config_packet.address_byte = ridUnlockConfiguration;
+        config_packet.setting.raw[0] = 0x88;
+        config_packet.setting.raw[1] = 0xB5;
+        ROS_INFO("Configuration ROM: lock removal started");
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        config_packet.address_byte = witmotion::ridTimeMilliseconds;
+        config_packet.setting.bin = static_cast<uint16_t>(QDateTime::currentDateTime().time().msec());
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        config_packet.address_byte = witmotion::ridTimeMinuteSecond;
+        config_packet.setting.raw[0] = static_cast<uint8_t>(QDateTime::currentDateTime().time().minute());
+        config_packet.setting.raw[1] = static_cast<uint8_t>(QDateTime::currentDateTime().time().second());
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        config_packet.address_byte = witmotion::ridTimeDayHour;
+        config_packet.setting.raw[0] = static_cast<uint8_t>(QDateTime::currentDateTime().date().day());
+        config_packet.setting.raw[1] = static_cast<uint8_t>(QDateTime::currentDateTime().time().hour());
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        config_packet.address_byte = witmotion::ridTimeYearMonth;
+        config_packet.setting.raw[0] = static_cast<int8_t>(QDateTime::currentDateTime().date().year() - 2000);
+        config_packet.setting.raw[1] = static_cast<uint8_t>(QDateTime::currentDateTime().date().month());
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        ROS_INFO("RTC pre-synchonization completed, saving configuration");
+        config_packet.address_byte = ridSaveSettings;
+        config_packet.setting.raw[0] = 0x00;
+        config_packet.setting.raw[1] = 0x00;
+        emit ConfigureSensor(config_packet);
+        sleep(1);
+        ROS_INFO("RTC synchronized");
+    }
 }
 
 void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
