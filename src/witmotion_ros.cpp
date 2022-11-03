@@ -5,6 +5,7 @@ bool ROSWitmotionSensorController::suspended = false;
 
 /* IMU */
 // rclcpp::Publisher<sensor_msgs::msg::Imu>* ROSWitmotionSensorController::imu_publisher = nullptr;
+rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_publisher;
 std::string ROSWitmotionSensorController::imu_frame_id = "imu";
 bool ROSWitmotionSensorController::imu_enable_accel = false;
 bool ROSWitmotionSensorController::imu_enable_velocities = false;
@@ -25,12 +26,14 @@ float ROSWitmotionSensorController::temp_variance = 0.f;
 float ROSWitmotionSensorController::temp_coeff = 1.f;
 float ROSWitmotionSensorController::temp_addition = 0.f;
 // rclcpp::Publisher<sensor_msgs::msg::Temperature>* ROSWitmotionSensorController::temp_publisher = nullptr;
+rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr  temp_publisher;
 
 /* MAGNETOMETER */
 std::string ROSWitmotionSensorController::magnetometer_frame_id = "imu";
 bool ROSWitmotionSensorController::magnetometer_enable = false;
 std::vector<double> ROSWitmotionSensorController::magnetometer_covariance = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 // rclcpp::Publisher<sensor_msgs::msg::MagneticField>* ROSWitmotionSensorController::magnetometer_publisher = nullptr;
+rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr  magnetometer_publisher;
 float ROSWitmotionSensorController::magnetometer_coeff = 1.f;
 float ROSWitmotionSensorController::magnetometer_addition = 0.f;
 
@@ -41,18 +44,21 @@ double ROSWitmotionSensorController::barometer_variance = 0.f;
 double ROSWitmotionSensorController::barometer_coeff = 1.f;
 double ROSWitmotionSensorController::barometer_addition = 0.f;
 // rclcpp::Publisher<sensor_msgs::msg::FluidPressure>* ROSWitmotionSensorController::barometer_publisher = nullptr;
+rclcpp::Publisher<sensor_msgs::msg::FluidPressure>::SharedPtr   barometer_publisher;
 
 /* ALTIMETER */
 bool ROSWitmotionSensorController::altimeter_enable = false;
 double ROSWitmotionSensorController::altimeter_coeff = 1.f;
 double ROSWitmotionSensorController::altimeter_addition = 0.f;
 // rclcpp::Publisher<std_msgs::msg::Float64>* ROSWitmotionSensorController::altimeter_publisher = nullptr;
+rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr   altimeter_publisher;
 bool ROSWitmotionSensorController::have_altitude = false;
 double ROSWitmotionSensorController::last_altitude = 0.f;
 
 /* ORIENTATION */
 bool ROSWitmotionSensorController::orientation_enable = false;
 // rclcpp::Publisher<geometry_msgs::msg::Quaternion>* ROSWitmotionSensorController::orientation_publisher = nullptr;
+rclcpp::Publisher<geometry_msgs::msg::Quaternion>::SharedPtr  orientation_publisher;
 
 /* GPS */
 bool ROSWitmotionSensorController::gps_enable = false;
@@ -69,9 +75,18 @@ std::string ROSWitmotionSensorController::gps_frame_id = "world";
 // rclcpp::Publisher<std_msgs::msg::UInt32> * ROSWitmotionSensorController::satellites_publisher = nullptr;
 // rclcpp::Publisher<std_msgs::msg::Float32>* ROSWitmotionSensorController::gps_altitude_publisher = nullptr;
 
+
+rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr  gps_publisher;
+rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr   ground_speed_publisher; 
+rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gps_altitude_publisher;
+rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr   accuracy_publisher;  
+rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr satellites_publisher;
+
+
 /* REALTIME CLOCK */
 bool ROSWitmotionSensorController::rtc_enable = false;
 // rclcpp::Publisher<rosgraph_msgs::msg::Clock> * ROSWitmotionSensorController::rtc_publisher = nullptr;
+rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr  rtc_publisher;
 bool ROSWitmotionSensorController::rtc_presync = false;
 
 ROSWitmotionSensorController::ROSWitmotionSensorController() : reader_thread(dynamic_cast<QObject *>(this)),

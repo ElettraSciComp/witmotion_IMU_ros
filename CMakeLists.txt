@@ -22,9 +22,9 @@ add_subdirectory(witmotion-uart-qt)
 #set(CMAKE_AUTOMOC ON)
 #qt5_wrap_cpp(MOC_SOURCES include/witmotion_ros.h)
 include_directories(include)
-add_library(witmotion_ros  src/witmotion_ros.cpp)
+#add_library(witmotion_ros src/witmotion_ros.cpp include/witmotion_ros.h)
 
-add_executable(witmotion_ros_node src/witmotion_ros_node.cpp)
+
 find_package(ament_cmake REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -41,6 +41,15 @@ find_package(rcl_interfaces REQUIRED)
 
 
 
+set(CMAKE_AUTOMOC ON)
+qt5_wrap_cpp(MOC_SOURCES
+    include/witmotion_ros.h
+    )
+
+add_library(witmotion_ros
+    ${MOC_SOURCES}
+    src/witmotion_ros.cpp
+    )
 
 #find_package(Qt5 REQUIRED COMPONENTS Core SerialPort)
 set(INCLUDE_DIRS ${ament_cmake_INCLUDE_DIRS} ${tf2_INCLUDE_DIRS}
@@ -54,12 +63,15 @@ set(LIBRARY_DIRS ${ament_cmake_LIBRARIES} ${tf2_LIBRARIES}
   ${sensor_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}
   ${nav_msgs_LIBRARIES} ${rosgraph_msgs_LIBRARIES}
   ${std_msgs_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5SerialPort_LIBRARIES} ${rcl_interfaces_LIBRARIES}) 
-target_link_libraries(witmotion_ros_node ${LIBRARY_DIRS})
+
+#target_link_libraries(another PUBLIC one)
 set(LIBS ${ament_cmake_LIBRARIES} ${tf2_LIBRARIES}
   ${tf2_geometry_msgs_LIBRARIES} ${rclcpp_LIBRARIES} ${std_srvs_LIBRARIES}
   ${sensor_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}
   ${nav_msgs_LIBRARIES} ${rosgraph_msgs_LIBRARIES}
   ${std_msgs_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5SerialPort_LIBRARIES} ${rcl_interfaces_LIBRARIES})
+
+target_link_libraries(witmotion_ros  ${LIBRARY_DIRS} witmotion-uart Qt5::Core Qt5::SerialPort)
 
 
 ament_export_dependencies(ament_cmake)
@@ -72,8 +84,39 @@ ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(nav_msgs)
 ament_export_dependencies(rosgraph_msgs)
 ament_export_dependencies(std_msgs)
+ament_export_dependencies(witmotion_ros)
+ament_export_dependencies(witmotion-uart)
+ament_export_dependencies(Qt5Core)
+ament_export_dependencies(Qt5SerialPort)
+ament_export_targets(export_witmotion_ros HAS_LIBRARY_TARGET)
+ament_export_targets(export_witmotion-uart HAS_LIBRARY_TARGET)
 ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(witmotion_ros ${LIBS})
+ament_export_libraries(witmotion_ros witmotion-uart ${LIBS})
+
+
+install(
+    TARGETS witmotion-uart
+    EXPORT export_witmotion-uart
+    LIBRARY DESTINATION lib/${PROJECT_NAME}
+    ARCHIVE DESTINATION lib/${PROJECT_NAME}
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+
+install(
+    TARGETS witmotion_ros
+    EXPORT export_witmotion_ros
+    LIBRARY DESTINATION lib/${PROJECT_NAME}
+    ARCHIVE DESTINATION lib/${PROJECT_NAME}
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(witmotion_ros_node src/witmotion_ros_node.cpp)
+target_link_libraries(witmotion_ros_node witmotion_ros)
+ament_target_dependencies(witmotion_ros_node Qt5Core)
+
+
+install( TARGETS witmotion_ros_node DESTINATION bin )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
