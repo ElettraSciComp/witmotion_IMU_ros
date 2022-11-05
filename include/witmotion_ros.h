@@ -18,6 +18,7 @@
 #include <ctime>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
 #include <sensor_msgs/msg/temperature.hpp>
@@ -36,7 +37,7 @@
 
 using namespace witmotion;
 
-class ROSWitmotionSensorController: public QObject, public rclcpp::Node
+class ROSWitmotionSensorController: public QObject
 {
     Q_OBJECT
 private:
@@ -55,7 +56,7 @@ private:
 
    
     /* ROS FIELDS*/
-  
+    rclcpp::Node::SharedPtr node;
     //std::shared_ptr<rclcpp::Node> node; 
     static bool Restart(std::shared_ptr<std_srvs::srv::Empty::Request> request, std::shared_ptr<std_srvs::srv::Empty::Response> response);
     std::string _restart_service_name;
@@ -159,7 +160,7 @@ private:
     static void rtc_process(const witmotion_datapacket& packet);
 public:
     static ROSWitmotionSensorController& Instance();
-    void Start();
+    rclcpp::Node::SharedPtr Start();
 public slots:
     void Packet(const witmotion_datapacket& packet);
     void Error(const QString& description);

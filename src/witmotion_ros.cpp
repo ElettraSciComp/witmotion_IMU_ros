@@ -1,5 +1,6 @@
 #include "witmotion_ros.h"
 
+
 bool ROSWitmotionSensorController::suspended = false;
 // rclcpp::Service<std_srvs::srv::Empty>::SharedPtr ROSWitmotionSensorController::restart_service = nullptr;
 
@@ -89,83 +90,84 @@ bool ROSWitmotionSensorController::rtc_enable = false;
 rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr  rtc_publisher;
 bool ROSWitmotionSensorController::rtc_presync = false;
 
-ROSWitmotionSensorController::ROSWitmotionSensorController() : reader_thread(dynamic_cast<QObject *>(this)),
+ROSWitmotionSensorController::ROSWitmotionSensorController() : reader_thread(dynamic_cast<QObject *>(this))
                                                                // node("witmotion_ros")
                                                                // node("~")
-                                                               Node("witmotion_ros")
+                                                               //Node("witmotion_ros")
 {
     /*Initializing ROS fields*/
-    this->declare_parameter("restart_service_name", "restart");
-    _restart_service_name = this->get_parameter("restart_service_name").get_parameter_value().get<std::string>();
+    node = rclcpp::Node::make_shared("witmotion");
+    node->declare_parameter("restart_service_name", "restart");
+    _restart_service_name = node->get_parameter("restart_service_name").get_parameter_value().get<std::string>();
     // node.getParam("restart_service_name", _restart_service_name);
     //_restart_service = node.advertiseService(_restart_service_name, ROSWitmotionSensorController::Restart);
-    restart_service = this->create_service<std_srvs::srv::Empty>("_restart_service_name", ROSWitmotionSensorController::Restart);
+    restart_service = node->create_service<std_srvs::srv::Empty>("_restart_service_name", ROSWitmotionSensorController::Restart);
 
     /* IMU */
     // node.param<std::string>("imu_publisher/topic_name", _imu_topic, "imu");
-    this->declare_parameter("imu_publisher/topic_name", "imu");
-    _imu_topic = this->get_parameter("imu_publisher/topic_name").get_parameter_value().get<std::string>();
+    node->declare_parameter("imu_publisher.topic_name", "imu");
+    _imu_topic = node->get_parameter("imu_publisher.topic_name").get_parameter_value().get<std::string>();
 
-    imu_publisher = this->create_publisher<sensor_msgs::msg::Imu>(_imu_topic, 1);
+    imu_publisher = node->create_publisher<sensor_msgs::msg::Imu>(_imu_topic, 1);
 
     // node.param<std::string>("imu_publisher/frame_id", imu_frame_id, "imu");
-    this->declare_parameter("imu_publisher/frame_id", "imu");
-    imu_frame_id = this->get_parameter("imu_publisher/frame_id").get_parameter_value().get<std::string>();
+    node->declare_parameter("imu_publisher.frame_id", "imu");
+    imu_frame_id = node->get_parameter("imu_publisher.frame_id").get_parameter_value().get<std::string>();
 
     // node.param<bool>("imu_publisher/use_native_orientation", imu_native_orientation, false);
-    this->declare_parameter("imu_publisher/use_native_orientation", false);
-    imu_native_orientation = this->get_parameter("imu_publisher/use_native_orientation").get_parameter_value().get<bool>();
+    node->declare_parameter("imu_publisher.use_native_orientation", false);
+    imu_native_orientation = node->get_parameter("imu_publisher.use_native_orientation").get_parameter_value().get<bool>();
 
     // node.param<bool>("imu_publisher/measurements/acceleration/enabled", imu_enable_accel, false);
-    this->declare_parameter("imu_publisher/measurements/acceleration/enabled", false);
-    imu_enable_accel = this->get_parameter("imu_publisher/measurements/acceleration/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("imu_publisher.measurements.acceleration.enabled", false);
+    imu_enable_accel = node->get_parameter("imu_publisher.measurements.acceleration.enabled").get_parameter_value().get<bool>();
 
     if (imu_enable_accel)
     {
         // node.getParam("imu_publisher/measurements/acceleration/covariance", imu_accel_covariance);
-        // this->declare_parameter<std::vector<double>>("imu_publisher/measurements/acceleration/covariance", imu_accel_covariance);
-        this->declare_parameter("imu_publisher/measurements/acceleration/covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-        imu_accel_covariance = this->get_parameter("imu_publisher/measurements/acceleration/covariance").get_parameter_value().get<std::vector<double>>();
+        // node->declare_parameter<std::vector<double>>("imu_publisher/measurements/acceleration/covariance", imu_accel_covariance);
+        node->declare_parameter("imu_publisher.measurements.acceleration.covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
+        imu_accel_covariance = node->get_parameter("imu_publisher.measurements.acceleration.covariance").get_parameter_value().get<std::vector<double>>();
     }
     // node.param<bool>("imu_publisher/measurements/angular_velocity/enabled", imu_enable_velocities, false);
-    this->declare_parameter("imu_publisher/measurements/angular_velocity/enabled", false);
-    imu_enable_velocities = this->get_parameter("imu_publisher/measurements/angular_velocity/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("imu_publisher.measurements.angular_velocity.enabled", false);
+    imu_enable_velocities = node->get_parameter("imu_publisher.measurements.angular_velocity.enabled").get_parameter_value().get<bool>();
 
     if (imu_enable_velocities)
     {
         // node.getParam("imu_publisher/measurements/angular_velocity/covariance", imu_velocity_covariance);
-        this->declare_parameter("imu_publisher/measurements/angular_velocity/covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-        imu_velocity_covariance = this->get_parameter("imu_publisher/measurements/angular_velocity/covariance").get_parameter_value().get<std::vector<double>>();
+        node->declare_parameter("imu_publisher.measurements.angular_velocity.covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
+        imu_velocity_covariance = node->get_parameter("imu_publisher.measurements.angular_velocity.covariance").get_parameter_value().get<std::vector<double>>();
     }
     // node.param<bool>("imu_publisher/measurements/orientation/enabled", imu_enable_orientation, false);
-    this->declare_parameter("imu_publisher/measurements/orientation/enabled", false);
-    imu_enable_orientation = this->get_parameter("imu_publisher/measurements/orientation/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("imu_publisher.measurements.orientation.enabled", false);
+    imu_enable_orientation = node->get_parameter("imu_publisher.measurements.orientation.enabled").get_parameter_value().get<bool>();
 
     if (imu_enable_orientation)
     {
         // node.getParam("imu_publisher/measurements/orientation/covariance", imu_orientation_covariance);
-        this->declare_parameter("imu_publisher/measurements/orientation/covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-        imu_orientation_covariance = this->get_parameter("imu_publisher/measurements/orientation/covariance").get_parameter_value().get<std::vector<double>>();
+        node->declare_parameter("imu_publisher.measurements.orientation.covariance", std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
+        imu_orientation_covariance = node->get_parameter("imu_publisher.measurements.orientation.covariance").get_parameter_value().get<std::vector<double>>();
     }
     /* TEMPERATURE */
     // node.param<bool>("temperature_publisher/enabled", temp_enable, false);
-    this->declare_parameter("temperature_publisher/enabled", false);
-    temp_enable = this->get_parameter("temperature_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("temperature_publisher.enabled", false);
+    temp_enable = node->get_parameter("temperature_publisher.enabled").get_parameter_value().get<bool>();
 
     if (temp_enable)
     {
         // node.getParam("temperature_publisher/topic_name", _temp_topic);
-        this->declare_parameter("temperature_publisher/topic_name", "temperature");
-        _temp_topic = this->get_parameter("temperature_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("temperature_publisher.topic_name", "temperature");
+        _temp_topic = node->get_parameter("temperature_publisher.topic_name").get_parameter_value().get<std::string>();
 
         // node.getParam("temperature_publisher/frame_id", temp_frame_id);
-        this->declare_parameter("temperature_publisher/frame_id", "temp_frame");
-        temp_frame_id = this->get_parameter("temperature_publisher/frame_id").get_parameter_value().get<std::string>();
+        node->declare_parameter("temperature_publisher.frame_id", "temp_frame");
+        temp_frame_id = node->get_parameter("temperature_publisher.frame_id").get_parameter_value().get<std::string>();
 
         std::string temp_from_str;
         // node.getParam("temperature_publisher/from_message", temp_from_str);
-        this->declare_parameter("temperature_publisher/from_message", "from_message");
-        temp_from_str = this->get_parameter("temperature_publisher/from_message").get_parameter_value().get<std::string>();
+        node->declare_parameter("temperature_publisher.from_message", "from_message");
+        temp_from_str = node->get_parameter("temperature_publisher.from_message").get_parameter_value().get<std::string>();
 
         std::transform(temp_from_str.begin(), temp_from_str.end(), temp_from_str.begin(), ::toupper);
         if (temp_from_str == "ACCELERATION")
@@ -183,190 +185,190 @@ ROSWitmotionSensorController::ROSWitmotionSensorController() : reader_thread(dyn
             temp_from = pidAcceleration;
         }
         // node.param<float>("temperature_publisher/variance", temp_variance, 0.f);
-        this->declare_parameter("temperature_publisher/variance", 0.f);
-        temp_variance = this->get_parameter("temperature_publisher/variance").get_parameter_value().get<float>();
+        node->declare_parameter("temperature_publisher.variance", 0.f);
+        temp_variance = node->get_parameter("temperature_publisher.variance").get_parameter_value().get<float>();
 
         // node.param<float>("temperature_publisher/coefficient", temp_coeff, 1.f);
-        this->declare_parameter("temperature_publisher/coefficient", 1.f);
-        temp_coeff = this->get_parameter("temperature_publisher/coefficient").get_parameter_value().get<float>();
+        node->declare_parameter("temperature_publisher.coefficient", 1.f);
+        temp_coeff = node->get_parameter("temperature_publisher.coefficient").get_parameter_value().get<float>();
 
         // node.param<float>("temperature_publisher/addition", temp_addition, 0.f);
-        this->declare_parameter("temperature_publisher/addition", 0.f);
-        temp_addition = this->get_parameter("temperature_publisher/addition").get_parameter_value().get<float>();
+        node->declare_parameter("temperature_publisher.addition", 0.f);
+        temp_addition = node->get_parameter("temperature_publisher.addition").get_parameter_value().get<float>();
         //_temp_publisher = node.advertise<sensor_msgs::Temperature>(_temp_topic, 1);
         //_temp_publisher = node->create_publisher<sensor_msgs::msg::Temperature>(_temp_topic, 1);
-        temp_publisher = this->create_publisher<sensor_msgs::msg::Temperature>(_temp_topic, 1);
+        temp_publisher = node->create_publisher<sensor_msgs::msg::Temperature>(_temp_topic, 1);
     }
     /* MAGNETOMETER */
     // node.param<bool>("magnetometer_publisher/enabled", magnetometer_enable, false);
-    this->declare_parameter("magnetometer_publisher/enabled", false);
-    magnetometer_enable = this->get_parameter("magnetometer_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("magnetometer_publisher.enabled", false);
+    magnetometer_enable = node->get_parameter("magnetometer_publisher.enabled").get_parameter_value().get<bool>();
     if (magnetometer_enable)
     {
         // node.getParam("magnetometer_publisher/topic_name", _magnetometer_topic);
-        this->declare_parameter("magnetometer_publisher/topic_name", "mag");
-        _magnetometer_topic = this->get_parameter("magnetometer_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("magnetometer_publisher.topic_name", "mag");
+        _magnetometer_topic = node->get_parameter("magnetometer_publisher.topic_name").get_parameter_value().get<std::string>();
 
         // node.getParam("magnetometer_publisher/frame_id", magnetometer_frame_id);
-        this->declare_parameter("magnetometer_publisher/frame_id", "mag_frame");
-        magnetometer_frame_id = this->get_parameter("magnetometer_publisher/frame_id").get_parameter_value().get<std::string>();
+        node->declare_parameter("magnetometer_publisher.frame_id", "mag_frame");
+        magnetometer_frame_id = node->get_parameter("magnetometer_publisher.frame_id").get_parameter_value().get<std::string>();
 
         // node.getParam("magnetometer_publisher/covariance", magnetometer_covariance);
-        this->declare_parameter("magnetometer_publisher/covariance", std::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        magnetometer_covariance = this->get_parameter("magnetometer_publisher/covariance").get_parameter_value().get<std::vector<double>>();
+        node->declare_parameter("magnetometer_publisher.covariance", std::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0}));
+        magnetometer_covariance = node->get_parameter("magnetometer_publisher.covariance").get_parameter_value().get<std::vector<double>>();
 
         // node.param<float>("magnetometer_publisher/coefficient", magnetometer_coeff, 1.f);
-        this->declare_parameter("magnetometer_publisher/coefficient", 1.f);
-        magnetometer_coeff = this->get_parameter("magnetometer_publisher/coefficient").get_parameter_value().get<float>();
+        node->declare_parameter("magnetometer_publisher.coefficient", 1.f);
+        magnetometer_coeff = node->get_parameter("magnetometer_publisher.coefficient").get_parameter_value().get<float>();
 
         // node.param<float>("magnetometer_publisher/addition", magnetometer_addition, 0.f);
-        this->declare_parameter("magnetometer_publisher/addition", 0.f);
-        magnetometer_addition = this->get_parameter("magnetometer_publisher/addition").get_parameter_value().get<float>();
+        node->declare_parameter("magnetometer_publisher.addition", 0.f);
+        magnetometer_addition = node->get_parameter("magnetometer_publisher.addition").get_parameter_value().get<float>();
 
         //_magnetometer_publisher = node.advertise<sensor_msgs::MagneticField>(_magnetometer_topic, 1);
         //_magnetometer_publisher = node->create_publisher<sensor_msgs::msg::MagneticField>(_magnetometer_topic, 1);
-        magnetometer_publisher = this->create_publisher<sensor_msgs::msg::MagneticField>(_magnetometer_topic, 1);
+        magnetometer_publisher = node->create_publisher<sensor_msgs::msg::MagneticField>(_magnetometer_topic, 1);
     }
     /* BAROMETER */
     // node.param<bool>("barometer_publisher/enabled", barometer_enable, false);
-    this->declare_parameter("barometer_publisher/enabled", false);
-    barometer_enable = this->get_parameter("barometer_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("barometer_publisher.enabled", false);
+    barometer_enable = node->get_parameter("barometer_publisher.enabled").get_parameter_value().get<bool>();
     if (barometer_enable)
     {
         // node.getParam("barometer_publisher/topic_name", _barometer_topic);
-        this->declare_parameter("barometer_publisher/topic_name", "baro");
-        _barometer_topic = this->get_parameter("barometer_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("barometer_publisher.topic_name", "baro");
+        _barometer_topic = node->get_parameter("barometer_publisher.topic_name").get_parameter_value().get<std::string>();
 
         // node.getParam("barometer_publisher/frame_id", barometer_frame_id);
-        this->declare_parameter("barometer_publisher/frame_id", "baro_frame");
-        barometer_frame_id = this->get_parameter("barometer_publisher/frame_id").get_parameter_value().get<std::string>();
+        node->declare_parameter("barometer_publisher.frame_id", "baro_frame");
+        barometer_frame_id = node->get_parameter("barometer_publisher.frame_id").get_parameter_value().get<std::string>();
 
         // node.getParam("barometer_publisher/variance", barometer_variance);
-        this->declare_parameter("barometer_publisher/variance", 1.f);
-        barometer_variance = this->get_parameter("barometer_publisher/variance").get_parameter_value().get<double>();
+        node->declare_parameter("barometer_publisher.variance", 1.f);
+        barometer_variance = node->get_parameter("barometer_publisher.variance").get_parameter_value().get<double>();
 
         // node.param<double>("barometer_publisher/coefficient", barometer_coeff, 1.f);
-        this->declare_parameter("barometer_publisher/coefficient", 1.f);
-        barometer_coeff = this->get_parameter("barometer_publisher/coefficient").get_parameter_value().get<float>();
+        node->declare_parameter("barometer_publisher.coefficient", 1.f);
+        barometer_coeff = node->get_parameter("barometer_publisher.coefficient").get_parameter_value().get<float>();
 
         // node.param<double>("barometer_publisher/addition", barometer_addition, 0.f);
-        this->declare_parameter("barometer_publisher/addition", 0.f);
-        barometer_addition = this->get_parameter("barometer_publisher/addition").get_parameter_value().get<float>();
+        node->declare_parameter("barometer_publisher.addition", 0.f);
+        barometer_addition = node->get_parameter("barometer_publisher.addition").get_parameter_value().get<float>();
 
         //_barometer_publisher = node.advertise<sensor_msgs::FluidPressure>(_barometer_topic, 1);
-        barometer_publisher = this->create_publisher<sensor_msgs::msg::FluidPressure>(_barometer_topic, 1);
+        barometer_publisher = node->create_publisher<sensor_msgs::msg::FluidPressure>(_barometer_topic, 1);
         // barometer_publisher = &_barometer_publisher;
     }
     /* ALTIMETER */
     // node.param<bool>("altimeter_publisher/enabled", altimeter_enable, false);
-    this->declare_parameter("altimeter_publisher/enabled", false);
-    altimeter_enable = this->get_parameter("altimeter_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("altimeter_publisher.enabled", false);
+    altimeter_enable = node->get_parameter("altimeter_publisher.enabled").get_parameter_value().get<bool>();
     if (barometer_enable)
     {
         // node.getParam("altimeter_publisher/topic_name", _altimeter_topic);
-        this->declare_parameter("altimeter_publisher/topic_name", "altimeter");
-        _altimeter_topic = this->get_parameter("altimeter_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("altimeter_publisher.topic_name", "altimeter");
+        _altimeter_topic = node->get_parameter("altimeter_publisher.topic_name").get_parameter_value().get<std::string>();
 
         // node.param<double>("altimeter_publisher/coefficient", altimeter_coeff, 1.f);
-        this->declare_parameter("altimeter_publisher/coefficient", 1.f);
-        altimeter_coeff = this->get_parameter("altimeter_publisher/coefficient").get_parameter_value().get<float>();
+        node->declare_parameter("altimeter_publisher.coefficient", 1.f);
+        altimeter_coeff = node->get_parameter("altimeter_publisher.coefficient").get_parameter_value().get<float>();
 
         // node.param<double>("altimeter_publisher/addition", altimeter_addition, 0.f);
-        this->declare_parameter("altimeter_publisher/addition", 0.f);
-        altimeter_addition = this->get_parameter("altimeter_publisher/addition").get_parameter_value().get<float>();
+        node->declare_parameter("altimeter_publisher.addition", 0.f);
+        altimeter_addition = node->get_parameter("altimeter_publisher.addition").get_parameter_value().get<float>();
 
         //_altimeter_publisher = node.advertise<std_msgs::msg::Float64>(_altimeter_topic, 1);
-        altimeter_publisher = this->create_publisher<std_msgs::msg::Float64>(_altimeter_topic, 1);
+        altimeter_publisher = node->create_publisher<std_msgs::msg::Float64>(_altimeter_topic, 1);
     }
     /* ORIENTATION */
     // node.param<bool>("orientation_publisher/enabled", orientation_enable, false);
-    this->declare_parameter("orientation_publisher/enabled", false);
-    orientation_enable = this->get_parameter("orientation_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("orientation_publisher.enabled", false);
+    orientation_enable = node->get_parameter("orientation_publisher.enabled").get_parameter_value().get<bool>();
 
     if (orientation_enable)
     {
         // node.getParam("orientation_publisher/topic_name", _orientation_topic);
-        this->declare_parameter("orientation_publisher/topic_name", "orientation");
-        _orientation_topic = this->get_parameter("orientation_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("orientation_publisher.topic_name", "orientation");
+        _orientation_topic = node->get_parameter("orientation_publisher.topic_name").get_parameter_value().get<std::string>();
         //_orientation_publisher = node.advertise<geometry_msgs::Quaternion>(_orientation_topic, 1);
-        orientation_publisher = this->create_publisher<geometry_msgs::msg::Quaternion>(_orientation_topic, 1);
+        orientation_publisher = node->create_publisher<geometry_msgs::msg::Quaternion>(_orientation_topic, 1);
     }
     /* GPS */
     // node.param<bool>("gps_publisher/enabled", gps_enable, false);
-    this->declare_parameter("gps_publisher/enabled", false);
-    gps_enable = this->get_parameter("gps_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("gps_publisher.enabled", false);
+    gps_enable = node->get_parameter("gps_publisher.enabled").get_parameter_value().get<bool>();
     if (gps_enable)
     {
         // node.getParam("gps_publisher/navsat_fix_frame_id", gps_frame_id);
-        this->declare_parameter("gps_publisher/navsat_fix_frame_id", "gps_frame");
-        gps_frame_id = this->get_parameter("gps_publisher/navsat_fix_frame_id").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.navsat_fix_frame_id", "gps_frame");
+        gps_frame_id = node->get_parameter("gps_publisher.navsat_fix_frame_id").get_parameter_value().get<std::string>();
 
         // node.getParam("gps_publisher/navsat_fix_topic_name", _gps_topic);
-        this->declare_parameter("gps_publisher/navsat_fix_topic_name", "gps");
-        _gps_topic = this->get_parameter("gps_publisher/navsat_fix_topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.navsat_fix_topic_name", "gps");
+        _gps_topic = node->get_parameter("gps_publisher.navsat_fix_topic_name").get_parameter_value().get<std::string>();
         //_gps_publisher = node.advertise<sensor_msgs::NavSatFix>(_gps_topic, 1);
-        gps_publisher = this->create_publisher<sensor_msgs::msg::NavSatFix>(_gps_topic, 1);
+        gps_publisher = node->create_publisher<sensor_msgs::msg::NavSatFix>(_gps_topic, 1);
 
         // node.getParam("gps_publisher/ground_speed_topic_name", _ground_speed_topic);
-        this->declare_parameter("gps_publisher/ground_speed_topic_name", "gps");
-        _ground_speed_topic = this->get_parameter("gps_publisher/ground_speed_topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.ground_speed_topic_name", "gps");
+        _ground_speed_topic = node->get_parameter("gps_publisher.ground_speed_topic_name").get_parameter_value().get<std::string>();
         //_ground_speed_publisher = node.advertise<geometry_msgs::Twist>(_ground_speed_topic, 1);
-        ground_speed_publisher = this->create_publisher<geometry_msgs::msg::Twist>(_ground_speed_topic, 1);
+        ground_speed_publisher = node->create_publisher<geometry_msgs::msg::Twist>(_ground_speed_topic, 1);
 
         // node.getParam("gps_publisher/navsat_variance_topic_name", _accuracy_topic);
-        this->declare_parameter("gps_publisher/navsat_variance_topic_name", "accuracy");
-        _accuracy_topic = this->get_parameter("gps_publisher/navsat_variance_topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.navsat_variance_topic_name", "accuracy");
+        _accuracy_topic = node->get_parameter("gps_publisher.navsat_variance_topic_name").get_parameter_value().get<std::string>();
         //_accuracy_publisher = node.advertise<geometry_msgs::Vector3>(_accuracy_topic, 1);
-        accuracy_publisher = this->create_publisher<geometry_msgs::msg::Vector3>(_accuracy_topic, 1);
+        accuracy_publisher = node->create_publisher<geometry_msgs::msg::Vector3>(_accuracy_topic, 1);
 
         // node.getParam("gps_publisher/navsat_satellites_topic_name", _satellites_topic);
-        this->declare_parameter("gps_publisher/navsat_satellites_topic_name", "satellites");
-        _satellites_topic = this->get_parameter("gps_publisher/navsat_satellites_topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.navsat_satellites_topic_name", "satellites");
+        _satellites_topic = node->get_parameter("gps_publisher.navsat_satellites_topic_name").get_parameter_value().get<std::string>();
         //_satellites_publisher = node.advertise<std_msgs::msg::UInt32>(_satellites_topic, 1);
-        satellites_publisher = this->create_publisher<std_msgs::msg::UInt32>(_satellites_topic, 1);
+        satellites_publisher = node->create_publisher<std_msgs::msg::UInt32>(_satellites_topic, 1);
 
         // node.getParam("gps_publisher/navsat_altitude_topic_name", _gps_altitude_topic);
-        this->declare_parameter("gps_publisher/navsat_altitude_topic_name", "gps_altitude");
-        _gps_altitude_topic = this->get_parameter("gps_publisher/navsat_altitude_topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("gps_publisher.navsat_altitude_topic_name", "gps_altitude");
+        _gps_altitude_topic = node->get_parameter("gps_publisher.navsat_altitude_topic_name").get_parameter_value().get<std::string>();
         //_gps_altitude_publisher = node.advertise<std_msgs::msg::Float32>(_gps_altitude_topic, 1);
-        gps_altitude_publisher = this->create_publisher<std_msgs::msg::Float32>(_gps_altitude_topic, 1);
+        gps_altitude_publisher = node->create_publisher<std_msgs::msg::Float32>(_gps_altitude_topic, 1);
     }
     /* REALTIME CLOCK */
     // node.param<bool>("rtc_publisher/enabled", rtc_enable, false);
-    this->declare_parameter("rtc_publisher/enabled", false);
-    rtc_enable = this->get_parameter("rtc_publisher/enabled").get_parameter_value().get<bool>();
+    node->declare_parameter("rtc_publisher.enabled", false);
+    rtc_enable = node->get_parameter("rtc_publisher.enabled").get_parameter_value().get<bool>();
     if (rtc_enable)
     {
         // node.getParam("rtc_publisher/topic_name", _rtc_topic);
-        this->declare_parameter("rtc_publisher/topic_name", "rtc");
-        _rtc_topic = this->get_parameter("rtc_publisher/topic_name").get_parameter_value().get<std::string>();
+        node->declare_parameter("rtc_publisher.topic_name", "rtc");
+        _rtc_topic = node->get_parameter("rtc_publisher.topic_name").get_parameter_value().get<std::string>();
         //_rtc_publisher = node.advertise<rcl_interfaces::msg::Clock>(_rtc_topic, 1);
-        rtc_publisher = this->create_publisher<rosgraph_msgs::msg::Clock>(_rtc_topic, 1);
+        rtc_publisher = node->create_publisher<rosgraph_msgs::msg::Clock>(_rtc_topic, 1);
         // node->create_publisher
 
         // node.param<bool>("rtc_publisher/presync", rtc_presync, false);
-        this->declare_parameter("rtc_publisher/presync", false);
-        rtc_presync = this->get_parameter("rtc_publisher/presync").get_parameter_value().get<bool>();
+        node->declare_parameter("rtc_publisher.presync", false);
+        rtc_presync = node->get_parameter("rtc_publisher.presync").get_parameter_value().get<bool>();
     }
 
     /*Initializing QT fields*/
     // node.param<std::string>("port", port_name, "ttyUSB0");
-    this->declare_parameter("port", "ttyUSB0");
-    port_name = this->get_parameter("port").get_parameter_value().get<std::string>();
+    node->declare_parameter("port", "ttyUSB0");
+    port_name = node->get_parameter("port").get_parameter_value().get<std::string>();
 
     int int_rate;
     // node.param<int>("baud_rate", int_rate, 9600);
-    this->declare_parameter("baud_rate", 9600);
-    int_rate = this->get_parameter("baud_rate").get_parameter_value().get<int>();
+    node->declare_parameter("baud_rate", 9600);
+    int_rate = node->get_parameter("baud_rate").get_parameter_value().get<int>();
 
     port_rate = static_cast<QSerialPort::BaudRate>(int_rate);
     reader = new QBaseSerialWitmotionSensorReader(QString(port_name.c_str()), port_rate);
-    if (this->has_parameter("polling_interval"))
+    if (node->has_parameter("polling_interval"))
     {
         int int_interval;
         // node.param<int>("polling_interval", int_interval, 10);
-        this->declare_parameter("polling_interval", 10);
-        int_interval = this->get_parameter("polling_interval").get_parameter_value().get<int>();
+        node->declare_parameter("polling_interval", 10);
+        int_interval = node->get_parameter("polling_interval").get_parameter_value().get<int>();
         interval = static_cast<uint32_t>(int_interval);
         reader->SetSensorPollInterval(interval);
     }
@@ -662,9 +664,10 @@ ROSWitmotionSensorController &ROSWitmotionSensorController::Instance()
     return instance;
 }
 
-void ROSWitmotionSensorController::Start()
+rclcpp::Node::SharedPtr ROSWitmotionSensorController::Start()
 {
     emit RunReader();
+    RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"), "Controller started@@@@@@");
     if (rtc_enable && rtc_presync)
     {
         RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"), "Initiating RTC pre-synchonization: current timestamp %s", QDateTime::currentDateTime().toString(Qt::DateFormat::ISODateWithMs).toStdString().c_str());
@@ -704,6 +707,8 @@ void ROSWitmotionSensorController::Start()
         sleep(1);
         RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"), "RTC synchronized");
     }
+     
+    return node;
 }
 
 void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet)
