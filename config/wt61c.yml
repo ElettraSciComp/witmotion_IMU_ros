@@ -1,9 +1,9 @@
 witmotion:
     ros__parameters:
-      port: ttyAMA1
-      #port: /dev/ttyUSB3
+      port: /dev/ttyAMA1
+      #port: /dev/ttyUSB0
       baud_rate: 115200 # baud
-      polling_interval: 10 # ms
+      polling_interval: 25 # ms
       restart_service_name: /restart_imu
       imu_publisher:
           topic_name: /imu_data
@@ -66,6 +66,6 @@ witmotion:
           navsat_variance_topic_name: /gps_variance
           ground_speed_topic_name: /gps_ground_speed
       rtc_publisher:
-          enabled: false
+          enabled: true
           topic_name: /witmotion_clock
           presync: true

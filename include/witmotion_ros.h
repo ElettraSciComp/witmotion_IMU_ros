@@ -24,6 +24,8 @@
 #include <sensor_msgs/msg/temperature.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
+#include <std_msgs/msg/string.hpp>
+
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
@@ -60,7 +62,7 @@ private:
     //std::shared_ptr<rclcpp::Node> node; 
     static bool Restart(std::shared_ptr<std_srvs::srv::Empty::Request> request, std::shared_ptr<std_srvs::srv::Empty::Response> response);
     std::string _restart_service_name;
-    rclcpp::Service<std_srvs::srv::Empty>::SharedPtr restart_service;
+    
  
 
     /* IMU */
