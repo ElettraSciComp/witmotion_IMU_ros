@@ -1,5 +1,5 @@
 #include "witmotion_ros.h"
-#include<unistd.h>
+
 rclcpp::TimerBase::SharedPtr timer_;
 rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
 
@@ -114,9 +114,6 @@ bool ROSWitmotionSensorController::rtc_presync = false;
 
 ROSWitmotionSensorController::ROSWitmotionSensorController()
     : reader_thread(dynamic_cast<QObject *>(this))
-// node("witmotion_ros")
-// node("~")
-// Node("witmotion_ros")
 {
 
   /*Initializing ROS fields*/
@@ -680,7 +677,9 @@ void ROSWitmotionSensorController::imu_process(
       (imu_enable_velocities == imu_have_velocities) &&
       (imu_enable_orientation == imu_have_orientation)) {
     //RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"),"Process imu and publish!!!!!!!!!");
+    
     imu_publisher->publish(msg);
+    
     imu_have_accel = false;
     imu_have_velocities = false;
     imu_have_orientation = false;
