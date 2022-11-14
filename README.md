@@ -4,6 +4,12 @@
 ## Datasheets and official documentation
 The module is developed according to the specifications released by Witmotion, the presented snapshot has download date is 23.02.2022. The official website https://wiki.wit-motion.com is not always accessible, so the PDF snapshots are placed under [IPFS web directory](https://ipfs.elettra.eu/ipfs/QmWW2WFYyK5jMtNHbXF7jeTXrMtNkdAC42LtDV9DyLr9tP).
 
+## ROS2 branch
+The ROS2 compatible implementation of the driver is WIP under [`ros2`](https://github.com/ElettraSciComp/witmotion_IMU_ros/tree/ros2) branch. The initial migration made by @fllay (pull request #12).
+
+### Marking ROS2-related issues and pull requests
+The contributors are strongly encouraged to mark the names of their ROS2-related issues and pull requests with `[ROS2]` prefix.
+
 ## Installation
 
 ### Prerequisites
