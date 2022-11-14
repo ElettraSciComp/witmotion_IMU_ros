@@ -1,4 +1,0 @@
-<launch>
-    <rosparam command="load" file="$(find witmotion_ros)/config/wt901.yml" />
-    <node name="witmotion_imu" pkg="witmotion_ros"  type="witmotion_ros_node" output="screen"/>
-</launch>
