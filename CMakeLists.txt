@@ -22,8 +22,6 @@ file(READ ${CMAKE_CURRENT_SOURCE_DIR}/package.xml package_data)
 string(REGEX REPLACE "\<version\>.*\<\/version\>" "\<version\>${modified_version}\<\/version\>" package_data "${package_data}")
 file(WRITE  ${CMAKE_CURRENT_SOURCE_DIR}/package.xml "${package_data}")
 
-add_compile_options(-std=gnu++14)
-
 set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS
