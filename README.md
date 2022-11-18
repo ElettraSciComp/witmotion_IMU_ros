@@ -14,16 +14,17 @@ sudo apt-get install libqt5serialport5-dev
 
 ### Building
 ```sh
-cd catkin_ws
-git clone --recursive https://github.com/ElettraSciComp/witmotion_IMU_ros.git src/witmotion_ros
-catkin_make
+cd ros2_ws/src
+git clone -b ros2 --recursive https://github.com/ElettraSciComp/witmotion_IMU_ros.git src/witmotion_ros
+colcon build --packages-select witmotion_ros
+source install/setup.bash
 ```
 If compilation fails, first check the directory `src/witmotion_ros/witmotion-uart-qt`. If it is empty, the recursive clone failed, and you should manually clone the underlying library from the repository https://github.com/ElettraSciComp/witmotion_IMU_QT into this directory. **IMPORTANT!** Please beware of the directory name, the `CMakeLists` file refers exactly to the name `witmotion-uart-qt` specified in the target import section.
 
 
 ## Usage
 ```sh
-roslaunch witmotion_ros witmotion.launch
+ros2 launch witmotion_ros wt61c.py
 ```
 
 ## Configuration
