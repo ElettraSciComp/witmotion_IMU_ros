@@ -1,36 +1,33 @@
 #include "witmotion_ros.h"
 
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <unistd.h>
 
-int main(int argc, char *argv[]) {
-
-  QCoreApplication app(argc, argv);
-  rclcpp::InitOptions options{};
-  options.shutdown_on_signal = true;
-  rclcpp::init(argc, argv, options);
-  rclcpp::on_shutdown([]() {
-    RCLCPP_INFO(rclcpp::get_logger("MinimalPublisher"), "Shutting down QT...");
+void handle_shutdown(int s)
+{
+    ROS_INFO("Shutting down node...");
+    ros::shutdown();
     QCoreApplication::exit(0);
-    QThreadPool::globalInstance()->waitForDone();
-    RCLCPP_INFO(rclcpp::get_logger("MinimalPublisher"),"Shutting down node...");
-    if (!rclcpp::shutdown()) {
-      RCLCPP_INFO(rclcpp::get_logger("MinimalPublisher"), "Shutting down node fail...");
-    }
-  });
-
-  ROSWitmotionSensorController &controller = ROSWitmotionSensorController::Instance();
-  auto node = controller.Start();
-  rclcpp::executors::SingleThreadedExecutor executor;
-  executor.add_node(node);
-
-  std::thread spinThread([&executor, &app]() { executor.spin(); });
-
-  spinThread.detach();
-  RCLCPP_INFO(rclcpp::get_logger("MinimalPublisher"), "QT spin !!!!!");
-  int result = app.exec();
-  return result;
 }
+
+int main(int argc, char** args)
+{ 
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = handle_shutdown;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
+    QCoreApplication app(argc, args);
+    ros::init(argc, args, "witmotion_ros", ros::InitOption::NoSigintHandler);
+    ROSWitmotionSensorController& controller = ROSWitmotionSensorController::Instance();
+    controller.Start();
+    ros::AsyncSpinner spinner(2);
+    spinner.start();
+    int result = app.exec();
+    ros::waitForShutdown();
+    return result;
+}
+

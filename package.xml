@@ -1,18 +1,24 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>witmotion_ros</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="pi@todo.todo">pi</maintainer>
-  <license>TODO: License declaration</license>
+<package format="2">
+    <name>witmotion_ros</name>
+    <version>0.11.18</version>
+    <description>Standalone QT-based IMU/GPS decoder nodes for Witmotion UART-compatible sensor devices</description>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+    <maintainer email="andrey.vukolov@elettra.eu">Andrey Vukolov</maintainer>
+    <author email="andrey.vukolov@elettra.eu">Andrey Vukolov</author>
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+    <license>MIT</license>
 
-  <export>
-    <build_type>ament_cmake</build_type>
-  </export>
+    <buildtool_depend>catkin</buildtool_depend>
+    <depend>roscpp</depend>
+    <depend>sensor_msgs</depend>
+    <depend>geometry_msgs</depend>
+    <depend>message_runtime</depend>
+    <depend>std_msgs</depend>
+    <depend>std_srvs</depend>
+    <depend>nav_core</depend>
+    <depend>nav_msgs</depend>
+    <depend>tf2</depend>
+    <depend>tf2_geometry_msgs</depend>
+    <depend>rosgraph_msgs</depend>
 </package>
+
