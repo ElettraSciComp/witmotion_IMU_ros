@@ -23,6 +23,7 @@ If compilation fails, first check the directory `src/witmotion_ros/witmotion-uar
 
 
 ## Usage
+The example is for Witmotion WT61C sensor, please refer to the other sample launch files for another sensor.
 ```sh
 ros2 launch witmotion_ros wt61c.py
 ```
