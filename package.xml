@@ -20,5 +20,9 @@
     <depend>tf2</depend>
     <depend>tf2_geometry_msgs</depend>
     <depend>rosgraph_msgs</depend>
+    
+    <export>
+        <rosdoc config="rosdoc.yaml" />
+    </export>
 </package>
 

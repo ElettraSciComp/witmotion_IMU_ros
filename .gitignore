@@ -34,4 +34,4 @@ Documentation
 *.exp
 Debug
 Release
-
+doc/
