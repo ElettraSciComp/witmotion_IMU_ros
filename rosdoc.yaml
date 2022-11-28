@@ -1,4 +1,4 @@
 - builder: external
   external_url: https://elettrascicomp.github.io/witmotion_IMU_QT/
-  external_label: "Library C++ API"
+  external_label: "IMU programming Library C++ SDK and API"
 

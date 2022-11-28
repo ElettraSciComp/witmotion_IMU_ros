@@ -5,6 +5,9 @@
 
     <maintainer email="andrey.vukolov@elettra.eu">Andrey Vukolov</maintainer>
     <author email="andrey.vukolov@elettra.eu">Andrey Vukolov</author>
+    <url type="website">https://wiki.ros.org/witmotion_ros</url>
+    <url type="bugtracker">https://github.com/ElettraSciComp/witmotion_IMU_ros/issues</url>
+    <url type="repository">https://github.com/ElettraSciComp/witmotion_IMU_ros</url>
 
     <license>MIT</license>
 
