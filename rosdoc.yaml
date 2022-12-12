@@ -1,7 +1,5 @@
 - builder: external
   external_url: https://elettrascicomp.github.io/witmotion_IMU_QT/
   external_label: "IMU programming Library C++ SDK and API"
-- builder: external
-  external_url: https://wiki.ros.org/witmotion_ros
-  external_label: "ROS 1 package documentation"
+
 
