@@ -18,7 +18,7 @@
     <depend>message_runtime</depend>
     <depend>std_msgs</depend>
     <depend>std_srvs</depend>
-    <depend>libqt5serialport5-dev</depend>
+    <depend>libqt5-serialport-dev</depend>
     <depend>nav_core</depend>
     <depend>nav_msgs</depend>
     <depend>tf2</depend>
