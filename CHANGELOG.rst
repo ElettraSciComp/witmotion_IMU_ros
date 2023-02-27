@@ -4,24 +4,23 @@ Changelog for package witmotion_ros
 
 Forthcoming
 -----------
-* .gitmodules fix for Rosdistro
-  - Added HTTPS submodule URL for compatibility with
-  rosdistro pipeline
-  - Release build CMake fix
-* Update README.md
-* Added ROS2 branch information to README
-* Merge pull request `#12 <https://github.com/ElettraSciComp/witmotion_IMU_ros/issues/12>`_ from fllay/main
-  Migration to ROS2 made by @fllay approved. The information about the existence of the ROS2 branch will be added to README.md
-* Rename the project to witmotion_ros
 * add ROS2 launch files
-* fixed segmentation fault when Cttl-C
-* fixed polling interval and threading
-* Update .gitmodules
-  Updated URL to proper HTTPS
 * add MultiThreadedExecutor in witmotion_ros_node
-* Fix link error
+
+1.02.27 (2023-02-27)
+--------------------
+* Merged pull request `#12 <https://github.com/ElettraSciComp/witmotion_IMU_ros/issues/12>`_ from fllay/main
+  Migration to ROS2 made by @fllay approved. The information about the existence of the ROS2 branch will be added to README.md
+* Added ROS2 branch information to README
 * ros2 code
   Contributors: Andrei Vukolov, Andrey Vukolov, fllay
+* Update .gitmodules
+  Updated URLs to proper HTTPS
+* Rename the project to witmotion_ros - cancelled
+* fixed segmentation fault when Ctrl-C
+* fixed polling interval and threading
+* Fix link error
+* package.xml version bump
 
 0.11.18 (2022-08-26)
 --------------------
