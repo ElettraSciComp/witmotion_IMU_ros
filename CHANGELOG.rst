@@ -7,7 +7,7 @@ Forthcoming
 * add ROS2 launch files
 * add MultiThreadedExecutor in witmotion_ros_node
 
-1.02.27 (2023-02-27)
+1.2.27 (2023-02-27)
 --------------------
 * Merged pull request `#12 <https://github.com/ElettraSciComp/witmotion_IMU_ros/issues/12>`_ from fllay/main
   Migration to ROS2 made by @fllay approved. The information about the existence of the ROS2 branch will be added to README.md
