@@ -1,4 +1,6 @@
 # [Witmotion IMU sensor driver for ROS](https://wiki.ros.org/witmotion_ros)
+[![ROS1 CI](https://github.com/ElettraSciComp/witmotion_IMU_ros/actions/workflows/main.yml/badge.svg)](https://github.com/ElettraSciComp/witmotion_IMU_ros/actions/workflows/main.yml)
+
 `witmotion_ros` module implements a ROS 1 wrapper for [Witmotion IMU](https://github.com/ElettraSciComp/witmotion_IMU_QT) driver library. It reads the data from the family of TTL-compatible inertial pose estimation units (IMUs) manufactured by [WitMotion Shenzhen Co.,Ltd](https://www.wit-motion.com) publishing the information in ROS-native way using [`sensor_msgs`](http://wiki.ros.org/sensor_msgs) and [`std_msgs`](http://wiki.ros.org/std_msgs) message definition packages. The module is focused on read-only access, so calibration and bias regulation functions are implemented in the underlying library. Port access model is implemented in monopolistic way acccording to UNIX specification, so only one instance of the module can be executed for the dedicated virtual device.
 
 ## Datasheets and official documentation
