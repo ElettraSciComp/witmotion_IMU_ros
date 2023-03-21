@@ -7,6 +7,13 @@ Forthcoming
 * add ROS2 launch files
 * add MultiThreadedExecutor in witmotion_ros_node
 
+1.2.28 (2023-03-21)
+--------------------
+* Updated online documentation
+* Updated CMake build scenario to suppress useless Doxygen warning
+* Version bump to 1.2.28
+* Matched versions for ROS node and underlying library
+
 1.2.27 (2023-02-27)
 --------------------
 * Merged pull request `#12 <https://github.com/ElettraSciComp/witmotion_IMU_ros/issues/12>`_ from fllay/main
