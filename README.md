@@ -15,7 +15,7 @@ sudo apt-get install libqt5serialport5-dev
 ### Building
 ```sh
 cd ros2_ws/src
-git clone -b ros2 --recursive https://github.com/ElettraSciComp/witmotion_IMU_ros.git src/witmotion_ros
+git clone -b ros2 --recursive https://github.com/ElettraSciComp/witmotion_IMU_ros.git witmotion_ros
 colcon build --packages-select witmotion_ros
 source install/setup.bash
 ```
