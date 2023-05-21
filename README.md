@@ -35,6 +35,7 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `port` - the virtual kernel device name for a port, `ttyUSB0` by default
 - `baud_rate` - port rate value to be used by the library for opening the port, _9600 baud_ by default
 - `polling_interval` - the sensor polling interval in milliseconds. If this parameter is omitted, the default value is set up by the library (50 ms).
+- `timeout_ms` - the sensor timeout period in milliseconds.  If no data is received from the sensor after this period, then an error is raised and the node terminates. If this parameter is omitted, the default value is set up by the library (1000 ms).  If this parameter is zero, the timeout check is disabled.
 - `restart_service_name` - the service name used to restart the sensor connection after an error.
 - `imu_publisher:`
     - `topic_name` - the topic name for IMU data publisher, `imu` in the node's namespace by default

@@ -440,13 +440,20 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                                                 port_rate);
 
   int int_interval;
-  
   node->declare_parameter("polling_interval", 10);
   int_interval = node->get_parameter("polling_interval")
                        .get_parameter_value()
                        .get<int>();
   interval = static_cast<uint32_t>(int_interval);
   reader->SetSensorPollInterval(interval);
+
+  int int_timeout_ms;
+  node->declare_parameter("timeout_ms", 1000);
+  int_timeout_ms = node->get_parameter("timeout_ms")
+                       .get_parameter_value()
+                       .get<int>();
+  timeout_ms = static_cast<uint32_t>(int_timeout_ms);
+  reader->SetSensorTimeout(int_timeout_ms);
 
   reader->ValidatePackets(true);
   reader->moveToThread(&reader_thread);

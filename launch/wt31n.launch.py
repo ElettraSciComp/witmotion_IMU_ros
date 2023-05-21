@@ -8,13 +8,13 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     config = os.path.join(
-        get_package_share_directory('witmotion'),
+        get_package_share_directory('witmotion_ros'),
         'config',
-        'wt901.yml'
+        'wt31n.yml'
         )
         
     node=Node(
-        package = 'witmotion',
+        package = 'witmotion_ros',
         executable = 'witmotion_ros_node',
         parameters = [config]
     )
