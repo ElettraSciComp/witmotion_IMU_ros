@@ -211,6 +211,13 @@ ROSWitmotionSensorController::ROSWitmotionSensorController():
        interval = static_cast<uint32_t>(int_interval);
        reader->SetSensorPollInterval(interval);
     }
+    if(node.hasParam("timeout_ms"))
+    {
+       int int_timeout_ms;
+       node.param<int>("timeout_ms", int_timeout_ms, 10);
+       timeout_ms = static_cast<uint32_t>(int_timeout_ms);
+       reader->SetSensorTimeout(timeout_ms);
+    }
     reader->ValidatePackets(true);
     reader->moveToThread(&reader_thread);
     connect(&reader_thread, &QThread::finished, reader, &QObject::deleteLater);
