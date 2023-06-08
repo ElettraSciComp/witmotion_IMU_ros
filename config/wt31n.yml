@@ -3,6 +3,7 @@ witmotion_ros:
     port: ttyUSB3
     baud_rate: 115200 # baud
     polling_interval: 10 # ms
+    timeout_ms: 150 # ms
     restart_service_name: /restart_imu
     imu_publisher:
       topic_name: /imu

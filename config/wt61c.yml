@@ -4,6 +4,7 @@ witmotion:
     #port: /dev/ttyUSB0
     baud_rate: 115200 # baud
     polling_interval: 25 # ms
+    timeout_ms: 150 # ms
     restart_service_name: /restart_imu
     imu_publisher:
       topic_name: /imu_data
