@@ -43,6 +43,7 @@ private:
     std::string port_name;
     QSerialPort::BaudRate port_rate;
     uint32_t interval;
+    uint32_t timeout_ms;
     QThread reader_thread;
     QBaseSerialWitmotionSensorReader* reader;
     static bool suspended;
