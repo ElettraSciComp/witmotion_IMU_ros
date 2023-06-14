@@ -4,8 +4,15 @@ Changelog for package witmotion_ros
 
 Forthcoming
 -----------
-* add ROS2 launch files
 * add MultiThreadedExecutor in witmotion_ros_node
+
+1.3.0 (2023-06-14)
+--------------------
+* Added support for serial port timeout behaviour (`timeout_ms`)
+* Updated README.md
+* Merged pull request `#27 <https://github.com/ElettraSciComp/witmotion_IMU_ros/pull/27>` from `gsokoll`
+* Version bump to 1.3.0
+* Matched versions for ROS node and underlying library after merging pull request `#7 <https://github.com/ElettraSciComp/witmotion_IMU_QT/pull/7>`
 
 1.2.28 (2023-03-21)
 --------------------
