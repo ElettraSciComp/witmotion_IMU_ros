@@ -6,6 +6,13 @@ Forthcoming
 -----------
 * add MultiThreadedExecutor in witmotion_ros_node
 
+1.3.1 (2023-08-08)
+--------------------
+* Fixed GPS decoder function in the underlying library (added x10 multiplier in Degrees section)
+* Version bump to 1.3.1
+* Community-driven test of the library on WTGAHRS1 combined enclosed IMU/GPS sensor module `<https://www.wit-motion.com/inertial-navigation/witmotion-wtgahrs1-10-axis-gps.html>` by Quing Joe Wong `joewong00`
+* Contributors: Andrey Vukolov, Quing Joe Wong
+
 1.3.0 (2023-06-14)
 --------------------
 * Added support for serial port timeout behaviour (`timeout_ms`)
