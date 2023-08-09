@@ -426,8 +426,8 @@ void ROSWitmotionSensorController::gps_process(const witmotion_datapacket &packe
         msg.header.stamp = ros::Time::now();
         msg.status.service = sensor_msgs::NavSatStatus::SERVICE_GPS;
         msg.status.status = sensor_msgs::NavSatStatus::STATUS_FIX;
-        msg.latitude = latitude_deg + (latitude_min / 60.f);
-        msg.longitude = longitude_deg + (longitude_min / 60.f);
+        msg.latitude = std::floor(latitude_deg) + (latitude_min / 60.f);
+        msg.longitude = std::floor(longitude_deg) + (longitude_min / 60.f);
         msg.altitude = have_ground_speed ? gps_altitude : NAN;
         msg.position_covariance_type = have_accuracy ? sensor_msgs::NavSatFix::COVARIANCE_TYPE_DIAGONAL_KNOWN :
                                                        sensor_msgs::NavSatFix::COVARIANCE_TYPE_UNKNOWN;
