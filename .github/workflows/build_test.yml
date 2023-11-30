@@ -17,12 +17,17 @@ jobs:
       matrix:
         ros_distribution:
           - humble
+          - iron
           - rolling
         include:
           # Humble Hawksbill (May 2022 - May 2027)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
             ros_distribution: humble
             ros_version: 2
+          # Iron Irwini  (May 2023 - May 2028)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
+            ros_distribution: rolling
+            ros_version: 2            
           # Rolling Ridley  (June 2020 - Present)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
             ros_distribution: rolling
@@ -33,7 +38,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: install deps
-        run: sudo apt-get -y install qtbase5-dev libqt5serialbus5-dev python3-numpy
+        run: sudo apt-get -y install qtbase5-dev libqt5serialport5-dev
       - name: build and test
         uses: ros-tooling/action-ros-ci@master
         with:
