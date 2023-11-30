@@ -37,6 +37,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: install deps
+        run: sudo apt-get -y install qtbase5-dev libqt5serialport5-dev
       - name: build and test
         uses: ros-tooling/action-ros-ci@master
         with:
