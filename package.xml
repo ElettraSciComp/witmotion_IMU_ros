@@ -17,7 +17,8 @@
   <depend>lifecycle_msgs</depend>
   <depend>qtbase5-dev</depend>
   <depend>libqt5serialport5-dev</depend>
-  <depend>libboost-all-dev</depend>
+  <depend>boost</depend>
+  <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
 
