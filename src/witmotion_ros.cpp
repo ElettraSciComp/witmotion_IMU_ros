@@ -90,8 +90,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
 {
 
   // In case we need string to float conversions this prevents locale dependant conversions
-  const char* locale = "C";
-  std::locale::global(std::locale(locale));
+  std::locale::global(std::locale::classic());
 
   /*Initializing ROS fields*/
   node = rclcpp::Node::make_shared("witmotion");
@@ -192,20 +191,11 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                             temp_from_str.c_str());
       temp_from = pidAcceleration;
     }
-    node->declare_parameter("temperature_publisher.variance", 0.f);
-    temp_variance = node->get_parameter("temperature_publisher.variance")
-                        .get_parameter_value()
-                        .get<float>();
 
-    node->declare_parameter("temperature_publisher.coefficient", 1.f);
-    temp_coeff = node->get_parameter("temperature_publisher.coefficient")
-                     .get_parameter_value()
-                     .get<float>();
-
-    node->declare_parameter("temperature_publisher.addition", 0.f);
-    temp_addition = node->get_parameter("temperature_publisher.addition")
-                        .get_parameter_value()
-                        .get<float>();
+    load_parameter_f("temperature_publisher.variance",  0.f, temp_variance);
+    load_parameter_f("temperature_publisher.coefficient",  1.f, temp_coeff);
+    load_parameter_f("temperature_publisher.addition",  0.f, temp_addition);
+    
     temp_publisher =
         node->create_publisher<sensor_msgs::msg::Temperature>(_temp_topic, 1);
   }
@@ -229,17 +219,10 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
 
   load_parameter(magnetometer_enable,"magnetometer_publisher.covariance", 0, magnetometer_covariance);
 
-    node->declare_parameter("magnetometer_publisher.coefficient", 1.f);
-    magnetometer_coeff =
-        node->get_parameter("magnetometer_publisher.coefficient")
-            .get_parameter_value()
-            .get<float>();
 
-    node->declare_parameter("magnetometer_publisher.addition", 0.f);
-    magnetometer_addition =
-        node->get_parameter("magnetometer_publisher.addition")
-            .get_parameter_value()
-            .get<float>();
+    load_parameter_f("magnetometer_publisher.coefficient",  1.f, magnetometer_coeff);
+    load_parameter_f("magnetometer_publisher.addition",  0.f, magnetometer_addition);
+
 
     magnetometer_publisher =
         node->create_publisher<sensor_msgs::msg::MagneticField>(
@@ -261,20 +244,9 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                              .get_parameter_value()
                              .get<std::string>();
 
-    node->declare_parameter("barometer_publisher.variance", 1.f);
-    barometer_variance = node->get_parameter("barometer_publisher.variance")
-                             .get_parameter_value()
-                             .get<double>();
-
-    node->declare_parameter("barometer_publisher.coefficient", 1.f);
-    barometer_coeff = node->get_parameter("barometer_publisher.coefficient")
-                          .get_parameter_value()
-                          .get<float>();
-
-    node->declare_parameter("barometer_publisher.addition", 0.f);
-    barometer_addition = node->get_parameter("barometer_publisher.addition")
-                             .get_parameter_value()
-                             .get<float>();
+    load_parameter_d("barometer_publisher.variance",  1.f, barometer_variance);
+    load_parameter_d("barometer_publisher.coefficient",  1.f, barometer_coeff);
+    load_parameter_d("barometer_publisher.addition",  0.f, barometer_addition);
 
     barometer_publisher = node->create_publisher<sensor_msgs::msg::FluidPressure>(_barometer_topic, 1);
   }
@@ -289,15 +261,8 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                            .get_parameter_value()
                            .get<std::string>();
 
-    node->declare_parameter("altimeter_publisher.coefficient", 1.f);
-    altimeter_coeff = node->get_parameter("altimeter_publisher.coefficient")
-                          .get_parameter_value()
-                          .get<float>();
-
-    node->declare_parameter("altimeter_publisher.addition", 0.f);
-    altimeter_addition = node->get_parameter("altimeter_publisher.addition")
-                             .get_parameter_value()
-                             .get<float>();
+  load_parameter_d("altimeter_publisher.coefficient",  1.f, altimeter_coeff);
+  load_parameter_d("altimeter_publisher.addition",  0.f, altimeter_addition);
 
     altimeter_publisher =
         node->create_publisher<std_msgs::msg::Float64>(_altimeter_topic, 1);
@@ -831,6 +796,38 @@ void ROSWitmotionSensorController::Error(const QString &description) {
               "Entering SUSPENDED state");
   reader->Suspend();
   suspended = true;
+}
+
+void ROSWitmotionSensorController::load_parameter_d(std::string param_name, double init_val, double &param_var) {
+          try{
+            node->declare_parameter(param_name, init_val);
+            param_var = node->get_parameter(param_name)
+                                .get_parameter_value()
+                                .get<double>();
+          } catch (const rclcpp::exceptions::InvalidParameterTypeException & ex) {
+
+              RCLCPP_WARN(node->get_logger(), "Exception reading param (%s).\nReading as string vector", ex.what());
+              node->declare_parameter( param_name, std::to_string(init_val) );
+              auto tmp = node->get_parameter(param_name).get_parameter_value().get<std::string>();  
+              param_var = strtod(tmp.c_str(), NULL);
+ 
+          }
+}
+
+void ROSWitmotionSensorController::load_parameter_f(std::string param_name, float init_val, float &param_var) {
+          try{
+            node->declare_parameter(param_name, init_val);
+            param_var = node->get_parameter(param_name)
+                                .get_parameter_value()
+                                .get<float>();
+          } catch (const rclcpp::exceptions::InvalidParameterTypeException & ex) {
+
+              RCLCPP_WARN(node->get_logger(), "Exception reading param (%s).\nReading as string vector", ex.what());
+              node->declare_parameter( param_name, std::to_string(init_val) );
+              auto tmp = node->get_parameter(param_name).get_parameter_value().get<std::string>();  
+              param_var = strtod(tmp.c_str(), NULL);
+ 
+          }
 }
 
 void ROSWitmotionSensorController::load_parameter(bool is_active, std::string param_name, double first_val, std::vector<double> &param_vector) {

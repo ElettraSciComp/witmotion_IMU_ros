@@ -166,6 +166,8 @@ public:
     static ROSWitmotionSensorController& Instance();
     rclcpp::Node::SharedPtr Start();
     void load_parameter(bool is_active, std::string param_name, double first_val, std::vector<double> &param_vector);
+    void load_parameter_d(std::string param_name, double init_val, double &param_var);
+    void load_parameter_f(std::string param_name, float init_val, float &param_var);
 public slots:
     void Packet(const witmotion_datapacket& packet);
     void Error(const QString& description);
