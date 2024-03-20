@@ -23,6 +23,7 @@ add_subdirectory(witmotion-uart-qt)
 #qt5_wrap_cpp(MOC_SOURCES include/witmotion_ros.h)
 include_directories(include)
 include_directories(/opt/ros/humble/include/tf2_geometry_msgs)
+include_directories(/opt/ros/iron/include/tf2_geometry_msgs)
 include_directories(witmotion-uart-qt/include)
 #add_library(witmotion_ros src/witmotion_ros.cpp include/witmotion_ros.h)
 
