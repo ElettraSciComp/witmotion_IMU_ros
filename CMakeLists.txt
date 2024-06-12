@@ -19,13 +19,8 @@ endif()
 
 add_subdirectory(witmotion-uart-qt)
 
-#set(CMAKE_AUTOMOC ON)
-#qt5_wrap_cpp(MOC_SOURCES include/witmotion_ros.h)
 include_directories(include)
-include_directories(/opt/ros/humble/include/tf2_geometry_msgs)
-include_directories(/opt/ros/iron/include/tf2_geometry_msgs)
 include_directories(witmotion-uart-qt/include)
-#add_library(witmotion_ros src/witmotion_ros.cpp include/witmotion_ros.h)
 
 
 find_package(ament_cmake REQUIRED)
@@ -55,26 +50,29 @@ add_library(witmotion_ros
 
 message(WARNING "tf2_geometry_msgs include dir: ${tf2_geometry_msgs_INCLUDE_DIRS} ")
 
-#find_package(Qt5 REQUIRED COMPONENTS Core SerialPort)
-set(INCLUDE_DIRS ${ament_cmake_INCLUDE_DIRS} ${tf2_INCLUDE_DIRS}
-  ${tf2_geometry_msgs_INCLUDE_DIRS} ${rclcpp_INCLUDE_DIRS}
-  ${std_srvs_INCLUDE_DIRS} ${sensor_msgs_INCLUDE_DIRS}
-  ${geometry_msgs_INCLUDE_DIRS} ${nav_msgs_INCLUDE_DIRS} 
-  ${rosgraph_msgs_INCLUDE_DIRS} ${std_msgs_INCLUDE_DIRS} ${Qt5Core_INCLUDE_DIRS} ${Qt5SerialPort_INCLUDE_DIRS} ${rcl_interfaces_INCLUDE_DIRS} 
-  ${rclcpp_lifecycle_INCLUDE_DIRS} ${lifecycle_msgs_INCLUDE_DIRS})
-include_directories(${INCLUDE_DIRS})
+
+set(dependencies
+  tf2
+  tf2_geometry_msgs
+  rclcpp
+  std_srvs
+  sensor_msgs
+  std_msgs
+  rcl_interfaces
+  rclcpp_lifecycle
+  lifecycle_msgs
+  )
+ament_target_dependencies(witmotion_ros ${dependencies})
+
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+
 set(LIBRARY_DIRS ${ament_cmake_LIBRARIES} ${tf2_LIBRARIES}
   ${tf2_geometry_msgs_LIBRARIES} ${rclcpp_LIBRARIES} ${std_srvs_LIBRARIES}
   ${sensor_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}
   ${nav_msgs_LIBRARIES} ${rosgraph_msgs_LIBRARIES}
   ${std_msgs_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5SerialPort_LIBRARIES} ${rcl_interfaces_LIBRARIES} ${rclcpp_lifecycle_LIBRARIES} ${lifecycle_msgs_LIBRARIES}) 
-
-#target_link_libraries(another PUBLIC one)
-set(LIBS ${ament_cmake_LIBRARIES} ${tf2_LIBRARIES}
-  ${tf2_geometry_msgs_LIBRARIES} ${rclcpp_LIBRARIES} ${std_srvs_LIBRARIES}
-  ${sensor_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}
-  ${nav_msgs_LIBRARIES} ${rosgraph_msgs_LIBRARIES}
-  ${std_msgs_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5SerialPort_LIBRARIES} ${rcl_interfaces_LIBRARIES} ${rclcpp_lifecycle_LIBRARIES} ${lifecycle_msgs_LIBRARIES})
 
 target_link_libraries(witmotion_ros  ${LIBRARY_DIRS} witmotion-uart Qt5::Core Qt5::SerialPort)
 
