@@ -89,6 +89,9 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
     : reader_thread(dynamic_cast<QObject *>(this))
 {
 
+  // In case we need string to float conversions this prevents locale dependant conversions
+  std::locale::global(std::locale::classic());
+
   /*Initializing ROS fields*/
   node = rclcpp::Node::make_shared("witmotion");
 
@@ -127,17 +130,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
           .get_parameter_value()
           .get<bool>();
 
-  if (imu_enable_accel) {
-
-    node->declare_parameter(
-        "imu_publisher.measurements.acceleration.covariance",
-        std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-    imu_accel_covariance =
-        node->get_parameter(
-                "imu_publisher.measurements.acceleration.covariance")
-            .get_parameter_value()
-            .get<std::vector<double>>();
-  }
+  load_parameter(imu_enable_accel, "imu_publisher.measurements.acceleration.covariance", -1.0, imu_accel_covariance);
 
   node->declare_parameter("imu_publisher.measurements.angular_velocity.enabled",
                           false);
@@ -146,16 +139,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
           .get_parameter_value()
           .get<bool>();
 
-  if (imu_enable_velocities) {
-    node->declare_parameter(
-        "imu_publisher.measurements.angular_velocity.covariance",
-        std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-    imu_velocity_covariance =
-        node->get_parameter(
-                "imu_publisher.measurements.angular_velocity.covariance")
-            .get_parameter_value()
-            .get<std::vector<double>>();
-  }
+  load_parameter(imu_enable_velocities,"imu_publisher.measurements.angular_velocity.covariance", -1.0, imu_velocity_covariance);
 
   node->declare_parameter("imu_publisher.measurements.orientation.enabled",
                           false);
@@ -164,14 +148,8 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
           .get_parameter_value()
           .get<bool>();
 
-  if (imu_enable_orientation) {
-    node->declare_parameter("imu_publisher.measurements.orientation.covariance",
-                            std::vector<double>({-1, 0, 0, 0, 0, 0, 0, 0, 0}));
-    imu_orientation_covariance =
-        node->get_parameter("imu_publisher.measurements.orientation.covariance")
-            .get_parameter_value()
-            .get<std::vector<double>>();
-  }
+  load_parameter(imu_enable_orientation,"imu_publisher.measurements.orientation.covariance", -1.0, imu_orientation_covariance);
+
   /* TEMPERATURE */
   node->declare_parameter("temperature_publisher.enabled", false);
   temp_enable = node->get_parameter("temperature_publisher.enabled")
@@ -213,20 +191,11 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                             temp_from_str.c_str());
       temp_from = pidAcceleration;
     }
-    node->declare_parameter("temperature_publisher.variance", 0.f);
-    temp_variance = node->get_parameter("temperature_publisher.variance")
-                        .get_parameter_value()
-                        .get<float>();
 
-    node->declare_parameter("temperature_publisher.coefficient", 1.f);
-    temp_coeff = node->get_parameter("temperature_publisher.coefficient")
-                     .get_parameter_value()
-                     .get<float>();
-
-    node->declare_parameter("temperature_publisher.addition", 0.f);
-    temp_addition = node->get_parameter("temperature_publisher.addition")
-                        .get_parameter_value()
-                        .get<float>();
+    load_parameter_f("temperature_publisher.variance",  0.f, temp_variance);
+    load_parameter_f("temperature_publisher.coefficient",  1.f, temp_coeff);
+    load_parameter_f("temperature_publisher.addition",  0.f, temp_addition);
+    
     temp_publisher =
         node->create_publisher<sensor_msgs::msg::Temperature>(_temp_topic, 1);
   }
@@ -248,24 +217,12 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
             .get_parameter_value()
             .get<std::string>();
 
-    node->declare_parameter("magnetometer_publisher.covariance",
-                            std::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0}));
-    magnetometer_covariance =
-        node->get_parameter("magnetometer_publisher.covariance")
-            .get_parameter_value()
-            .get<std::vector<double>>();
+  load_parameter(magnetometer_enable,"magnetometer_publisher.covariance", 0, magnetometer_covariance);
 
-    node->declare_parameter("magnetometer_publisher.coefficient", 1.f);
-    magnetometer_coeff =
-        node->get_parameter("magnetometer_publisher.coefficient")
-            .get_parameter_value()
-            .get<float>();
 
-    node->declare_parameter("magnetometer_publisher.addition", 0.f);
-    magnetometer_addition =
-        node->get_parameter("magnetometer_publisher.addition")
-            .get_parameter_value()
-            .get<float>();
+    load_parameter_f("magnetometer_publisher.coefficient",  1.f, magnetometer_coeff);
+    load_parameter_f("magnetometer_publisher.addition",  0.f, magnetometer_addition);
+
 
     magnetometer_publisher =
         node->create_publisher<sensor_msgs::msg::MagneticField>(
@@ -287,20 +244,9 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                              .get_parameter_value()
                              .get<std::string>();
 
-    node->declare_parameter("barometer_publisher.variance", 1.f);
-    barometer_variance = node->get_parameter("barometer_publisher.variance")
-                             .get_parameter_value()
-                             .get<double>();
-
-    node->declare_parameter("barometer_publisher.coefficient", 1.f);
-    barometer_coeff = node->get_parameter("barometer_publisher.coefficient")
-                          .get_parameter_value()
-                          .get<float>();
-
-    node->declare_parameter("barometer_publisher.addition", 0.f);
-    barometer_addition = node->get_parameter("barometer_publisher.addition")
-                             .get_parameter_value()
-                             .get<float>();
+    load_parameter_d("barometer_publisher.variance",  1.f, barometer_variance);
+    load_parameter_d("barometer_publisher.coefficient",  1.f, barometer_coeff);
+    load_parameter_d("barometer_publisher.addition",  0.f, barometer_addition);
 
     barometer_publisher = node->create_publisher<sensor_msgs::msg::FluidPressure>(_barometer_topic, 1);
   }
@@ -315,15 +261,8 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
                            .get_parameter_value()
                            .get<std::string>();
 
-    node->declare_parameter("altimeter_publisher.coefficient", 1.f);
-    altimeter_coeff = node->get_parameter("altimeter_publisher.coefficient")
-                          .get_parameter_value()
-                          .get<float>();
-
-    node->declare_parameter("altimeter_publisher.addition", 0.f);
-    altimeter_addition = node->get_parameter("altimeter_publisher.addition")
-                             .get_parameter_value()
-                             .get<float>();
+  load_parameter_d("altimeter_publisher.coefficient",  1.f, altimeter_coeff);
+  load_parameter_d("altimeter_publisher.addition",  0.f, altimeter_addition);
 
     altimeter_publisher =
         node->create_publisher<std_msgs::msg::Float64>(_altimeter_topic, 1);
@@ -465,7 +404,9 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
   connect(reader, &QAbstractWitmotionSensorReader::Acquired, this,
           &ROSWitmotionSensorController::Packet);
   connect(reader, &QAbstractWitmotionSensorReader::Error, this,
-          &ROSWitmotionSensorController::Error);       
+          &ROSWitmotionSensorController::Error);    
+
+  RCLCPP_INFO(node->get_logger(), "Starting node with lib version (%s).", witmotion::library_version().c_str());   
   reader_thread.start();
 
 }
@@ -478,6 +419,11 @@ ROSWitmotionSensorController::~ROSWitmotionSensorController() {
 bool ROSWitmotionSensorController::Restart(
     std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response) {
+  
+  // this is just to prevent compiler from complaining about unused arguments
+  (void)request;
+  (void)response;
+
   RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"),
               "Attempting to restart sensor connection from SUSPENDED state");
   if (!suspended) {
@@ -850,4 +796,56 @@ void ROSWitmotionSensorController::Error(const QString &description) {
               "Entering SUSPENDED state");
   reader->Suspend();
   suspended = true;
+}
+
+void ROSWitmotionSensorController::load_parameter_d(std::string param_name, double init_val, double &param_var) {
+          try{
+            node->declare_parameter(param_name, init_val);
+            param_var = node->get_parameter(param_name)
+                                .get_parameter_value()
+                                .get<double>();
+          } catch (const rclcpp::exceptions::InvalidParameterTypeException & ex) {
+
+              RCLCPP_WARN(node->get_logger(), "Exception reading param (%s).\nReading as string vector", ex.what());
+              node->declare_parameter( param_name, std::to_string(init_val) );
+              auto tmp = node->get_parameter(param_name).get_parameter_value().get<std::string>();  
+              param_var = strtod(tmp.c_str(), NULL);
+ 
+          }
+}
+
+void ROSWitmotionSensorController::load_parameter_f(std::string param_name, float init_val, float &param_var) {
+          try{
+            node->declare_parameter(param_name, init_val);
+            param_var = node->get_parameter(param_name)
+                                .get_parameter_value()
+                                .get<float>();
+          } catch (const rclcpp::exceptions::InvalidParameterTypeException & ex) {
+
+              RCLCPP_WARN(node->get_logger(), "Exception reading param (%s).\nReading as string vector", ex.what());
+              node->declare_parameter( param_name, std::to_string(init_val) );
+              auto tmp = node->get_parameter(param_name).get_parameter_value().get<std::string>();  
+              param_var = strtod(tmp.c_str(), NULL);
+ 
+          }
+}
+
+void ROSWitmotionSensorController::load_parameter(bool is_active, std::string param_name, double first_val, std::vector<double> &param_vector) {
+        if (is_active){
+          try{
+              node->declare_parameter( param_name, std::vector<double>({first_val, 0, 0, 0, 0, 0, 0, 0, 0}));
+              param_vector = node->get_parameter(  param_name).get_parameter_value().get<std::vector<double>>();  
+          } catch (const rclcpp::exceptions::InvalidParameterTypeException & ex) {
+
+              RCLCPP_WARN(node->get_logger(), "Exception reading param (%s).\nReading as string vector", ex.what());
+              node->declare_parameter( param_name, std::vector<std::string>({std::to_string(first_val), "0", "0", "0", "0", "0", "0", "0", "0"}));
+              auto tmp = node->get_parameter(param_name).get_parameter_value().get<std::vector<std::string>>();  
+
+              param_vector.clear();
+              for (std::string token : tmp){
+                param_vector.push_back(strtod(token.c_str(), NULL));
+              }
+
+          }
+        }
 }
