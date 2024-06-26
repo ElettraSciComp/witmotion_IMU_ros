@@ -1,0 +1,73 @@
+witmotion:
+  ros__parameters:
+    port: ttyUSB0
+    baud_rate: 9600 # baud
+    polling_interval: 50 # ms
+    timeout_ms: 150 # ms
+    restart_service_name: /restart_imu
+    imu_publisher:
+      topic_name: /imu
+      frame_id: imu
+      use_native_orientation: false # 311 edit: default -> true (ref: https://github.com/ElettraSciComp/witmotion_IMU_ros/issues/34)
+      measurements:
+        acceleration:
+          enabled: true
+          covariance: [0.0364, 0.0, 0.0, 0.0, 0.0048, 0.0, 0.0, 0.0, 0.0796]
+        angular_velocity:
+          enabled: true
+          covariance: [0.0663, 0.0, 0.0, 0.0, 0.1453, 0.0, 0.0, 0.0, 0.0378]
+        orientation:
+          enabled: true
+          covariance: [0.0479, 0.0, 0.0, 0.0, 0.0207, 0.0, 0.0, 0.0, 0.0041]
+    temperature_publisher:
+      enabled: true # 311: change from true to false
+      topic_name: /temperature
+      frame_id: base_link
+      from_message: acceleration # acceleration, angular_vel, orientation, magnetometer
+      variance: 0.01829
+      coefficient: 1.0 # Linear calibration parameters: coefficient
+      addition: 0.0 # and addendum
+    magnetometer_publisher:
+      enabled: true
+      topic_name: /magnetometer
+      frame_id: compass
+      coefficient: 0.00000001 # Linear calibration parameters: coefficient
+      addition: 0.0 # and addendum
+      covariance:
+        [
+          0.000000187123,
+          0.0,
+          0.0,
+          0.0,
+          0.000000105373,
+          0.0,
+          0.0,
+          0.0,
+          0.000000165816,
+        ]
+    barometer_publisher:
+      enabled: false
+      topic_name: /barometer
+      frame_id: base_link
+      variance: 0.001
+      coefficient: 1.0 # Linear calibration parameters: coefficient
+      addition: 0.0 # and addendum
+    altimeter_publisher:
+      enabled: false
+      topic_name: /altitude
+      coefficient: 1.0 # Linear calibration parameters: coefficient
+      addition: 0.0 # and addendum
+    orientation_publisher:
+      enabled: false
+      topic_name: /orientation
+    gps_publisher:
+      enabled: false
+      navsat_fix_frame_id: world
+      navsat_fix_topic_name: /gps
+      navsat_altitude_topic_name: /gps_altitude
+      navsat_satellites_topic_name: /gps_satellites
+      navsat_variance_topic_name: /gps_variance
+      ground_speed_topic_name: /gps_ground_speed
+    rtc_publisher:
+      enabled: false
+      topic_name: /witmotion_clock
