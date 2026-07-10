@@ -37,7 +37,10 @@ find_package(catkin REQUIRED COMPONENTS
     rosgraph_msgs
 )
 
-catkin_package(CATKIN_DEPENDS
+catkin_package(
+    INCLUDE_DIRS include
+    LIBRARIES witmotion_ros
+    CATKIN_DEPENDS
     message_runtime
     tf2
     sensor_msgs
@@ -66,4 +69,26 @@ target_link_libraries(witmotion_ros ${catkin_LIBRARIES} witmotion-uart Qt5::Core
 
 add_executable(witmotion_ros_node src/witmotion_ros_node.cpp)
 target_link_libraries(witmotion_ros_node PRIVATE ${catkin_LIBRARIES} witmotion_ros)
+
+#############
+## Install ##
+#############
+
+install(TARGETS witmotion_ros witmotion_ros_node witmotion-uart
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(FILES include/witmotion_ros.h
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY witmotion-uart-qt/include/witmotion
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY config launch
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
